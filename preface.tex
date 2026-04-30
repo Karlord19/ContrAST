@@ -30,6 +30,6 @@ Its purpose is to provide a recommender system for teaching assistants, which wi
 
 We decided to use clang/LLVM as the parser for C++ code (and also for C and arduino code), as it provides a full syntactic and semantic analysis, is well-maintained, and is easy to use as a library.
 As part of a research project preceding this thesis, we have already implemented a tool called atc (short for AST to comparatree) that extracts ASTs from C++ code using clang and stores them in a database.
-The database is called comparatree, maintained by the supervisor RnDr. David Bednárek Ph.D., and is designed to very efficiently store ASTs.
+The database is called comparatree, maintained by the supervisor RNDr. David Bednárek, Ph.D., and is designed to very efficiently store ASTs.
 The main contribution of this thesis is a tool called ContrAST, which implements a similarity measure for ASTs and creates reports of similar code fragments, that can be imported into Recodex.
 Recodex will then use these reports to show the teachers which submissions are similar and which code fragments they have in common.

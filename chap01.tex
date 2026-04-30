@@ -3,7 +3,7 @@
 \section{Code clones}
 
 Code clones are similar or identical code fragments that appear in different parts of a codebase.
-They can be classified into different types based on their similarity \cite{roy09}.
+They can be classified into different types based on their similarity.
 
 \begin{codepair}[Type 1 clones]
 \label{prg:type1clones}
@@ -63,7 +63,38 @@ Type 3 clones might have some statements added, modified, or removed, but still 
 Type 4 clones are code fragments that perform the same functionality but are implemented differently.
 An example of type 4 clones would be two different implementations of a sorting algorithm.
 
+\section{Clone detection approaches}
 
+From the input, possibly thousands of source files, a clone detector should identify and report all the code clones present in the codebase.
+To achieve this, a sequence of steps is typically followed \cite{roy09}.
+The detector may use only a subset of these steps, depending on the specific approach and the type of clones it aims to detect.
+
+\begin{enumerate}
+\item Preprocessing: Generated files are removed. The remaining files are fractioned into relevant units, such as functions or classes.
+\item Transformation: The code is transformed into an intermediate representation.
+\item Extraction: One of the following approaches is used to extract features from the code:
+  \begin{itemize}
+    \item Tokenization: A lexical analysis is performed, and the code is represented as a sequence of tokens.
+    \item Parsing: A syntactic analysis is performed, and the code is represented as a parse tree or an abstract syntax tree (AST).
+    \item Control and data flow analysis: A semantic analysis is performed, and the code is represented as a program dependence graph (PDG).
+  \end{itemize}
+\item Normalization: To reduce uninteresting differences between code fragments, whitespace and comments are removed, identifiers are consistently named or replaced with placeholders, and some code constructs are simplified.
+\item Match detection: The units are compared and similar ones are yielded as potential clones.
+\item Formatting: The original locations of the detected fragments are retrieved.
+\item Filtering: Potential clones are filtered either by a human or with a heuristic, to remove false positives and retain only the true clones.
+\item Aggregation: If there are many clones similar to each other, they can be grouped together to create a more compact report.
+\end{enumerate}
+
+We can then classify clone detection approaches based on the steps they use.
+The level of analysis performed then impacts the types of clones that can be detected, as well as the precision and recall of the detector.
+
+\begin{itemize}
+\item Textual: The code is treated as plain text, or only some basic parsing is performed.
+\item Lexical (token-based): The code is first tokenized and then normalized, and the resulting token sequences are sent for match detection.
+\item Syntactic (tree-based): The code is parsed into an AST. Algorithms for tree similarity are then used. The trees can also be serialized into a token or string representation, and then token-based approaches can be applied.
+\item Syntactic (metrics-based): The code is parsed into an AST, and then various metrics are computed. The resulting vectors of metrics are then compared using a similarity measure.
+\item Semantic: The code is analyzed to extract its semantics. This can be done using program dependence graphs, information retrieval techniques, artificial intelligence, \dots
+\end{itemize}
 
 \section{Tree edit distance}
 
