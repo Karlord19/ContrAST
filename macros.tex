@@ -102,6 +102,31 @@
 %%% of programs.
 \DefineVerbatimEnvironment{code}{Verbatim}{fontsize=\small, frame=single}
 
+% Side-by-side code snippets with a divider between them.
+\newenvironment{codepair}[1][]
+{%
+\begin{listing}[htbp]
+\centering
+\if\relax\detokenize{#1}\relax\else\caption{#1}\fi
+\begin{minipage}[t]{0.49\textwidth}
+\vspace{0pt}
+\raggedright
+}
+{%
+\end{minipage}%
+\end{listing}
+}
+
+\newcommand{\codepairsep}{%
+\end{minipage}%
+\hfill
+\vrule width 0.4pt
+\hfill
+\begin{minipage}[t]{0.49\textwidth}
+\vspace{0pt}
+\raggedright
+}
+
 % Settings for lstlisting -- program listing with syntax highlighting
 \ifcsname lstset\endcsname
 \lstset{
