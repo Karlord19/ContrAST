@@ -1,5 +1,11 @@
 \chapter{Related work}
 
+A recent study \cite{Maisch26} analyzed plagiarism behavior of first-year computer science students at KIT (Germany) and KTH (Sweden).
+They gave students solutions to problems and asked them to creatively modify them and fill in a form about their modifications.
+The students were allowed to use any tools they wanted, including LLMs.
+The results showed that the high-level structure of the code was often preserved, and the modified code was easily recognizable as a copy of the original code.
+This study tells us that even in the current situation, the plagiarism checkers are worth using at the academic environment.
+
 \section{Code clones}
 
 Code clones are similar or identical code fragments that appear in different parts of a codebase.
@@ -63,6 +69,9 @@ Type 3 clones might have some statements added, modified, or removed, but still 
 Type 4 clones are code fragments that perform the same functionality but are implemented differently.
 An example of type 4 clones would be two different implementations of a sorting algorithm.
 
+In the context of introductory programming courses, every solution to a given problem would be considered a type 4 clone of every other solution, as they all perform the same functionality.
+We need to then focus on detecting type 1 and type 2 clones, and ideally also some level of type 3 clones, as they are more likely to be the result of copying and modifying code, rather than independently solving the same problem.
+
 \section{Clone detection approaches}
 
 From the input, possibly thousands of source files, a clone detector should identify and report all the code clones present in the codebase.
@@ -95,6 +104,29 @@ The level of analysis performed then impacts the types of clones that can be det
 \item Syntactic (metrics-based): The code is parsed into an AST, and then various metrics are computed. The resulting vectors of metrics are then compared using a similarity measure.
 \item Semantic: The code is analyzed to extract its semantics. This can be done using program dependence graphs, information retrieval techniques, artificial intelligence, \dots
 \end{itemize}
+
+\section{Clone detection tools}
+
+We shortly review some of the existing plagiarism detection tools that accept source code as input, especially those that are relevant to our work or are widely used.
+We focus only on the original ideas behind the tools; many of them have evolved and now include various new approaches and features.
+
+There exist a few parsers that can be easily integrated into a tool for tokenization or parsing.
+The normalization step is often implemented as a custom solution, choosing which code constructs to simplify and how to rename identifiers.
+The resulting representation can then be language-agnostic, and the same match detection algorithm instance can be used for every supported language.
+
+Probably the most widely used detector is Moss (Measure of Software Similarity) using the winnowing algorithm \cite{moss03}.
+It primarily operates on source code, but the algorithm itself is textual.
+The code is first parsed and normalized based on the input format and then printed to a string representation.
+All substrings of a given length are hashed, and then all windows of a certain size are created from the sequence of hashes.
+From each window, the minimum hash value is selected as a fingerprint.
+The fingerprints are then stored, and the detector quickly finds matching fingerprints between different documents.
+
+JPlag \cite{jplag02} and YAP3 \cite{yap3} compare two documents at a time.
+First, the code is tokenized and normalized.
+Then, a string tiling algorithm is applied to the token sequences.
+It tries to find the longest common substrings between the two sequences, marks them as clones, and removes them from the sequences.
+This process is repeated until no more common substrings of a certain length can be found.
+This approach easily detects clones with transposed code segments.
 
 \section{Tree edit distance}
 
