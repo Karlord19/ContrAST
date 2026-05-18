@@ -1,12 +1,13 @@
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
-In order to learn programming, it is necessary to write a lot of code.
+In order to learn programming, one must write a lot of code.
 It is of no use to copy code written by someone else, even if it is correct and solves the problem.
 Students are often aware of this fact, but they still sometimes copy from others; and the teachers need appropriate tools to detect such cases of plagiarism.
 
 We will focus on the current situation at the Faculty of Mathematics and Physics at the Charles University, where the assignments and exams for introductory programming courses are submitted in the form of source code files to an online system called Recodex.
 Teachers configure a set of test cases for each assignment, and the system automatically runs those tests to check the correctness of the submitted programs.
+In homework assignments, students are able to submit code written by AI tools, but in exams in an offline environment, we only care about plagiarism between students, so we will not focus on AI-generated code in this thesis.
 
 Recodex provides a plagiarism-detection tool called Comparatrix.
 It is based on a string representation of the source code, only removing comments and whitespace.
@@ -26,10 +27,12 @@ The core of our tool shall be language-agnostic, and to add support for other la
 
 Some C++ parsers are available and would be absolutely sufficient for our purposes.
 However, another diploma thesis is currently being written at our department, which needs a full semantic analysis of the code, and thus a more complex parser.
-Its purpose is to provide a recommender system for teaching assistants, which will suggest feedback for students based on the code they submitted.
 
-We decided to use clang/LLVM as the parser for C++ code (and also for C and arduino code), as it provides a full syntactic and semantic analysis, is well-maintained, and is easy to use as a library.
 As part of a research project preceding this thesis, we have already implemented a tool called atc (short for AST to comparatree) that extracts ASTs from C++ code using clang and stores them in a database.
 The database is called comparatree, maintained by the supervisor RNDr. David Bednárek, Ph.D., and is designed to very efficiently store ASTs.
 The main contribution of this thesis is a tool called ContrAST, which implements a similarity measure for ASTs and creates reports of similar code fragments, that can be imported into Recodex.
 Recodex will then use these reports to show the teachers which submissions are similar and which code fragments they have in common.
+
+The structure of the thesis is as follows.
+In \autoref{sec:related}, we review the related work in the field of plagiarism detection, especially in the context of programming assignments.
+The rest of the thesis will be.

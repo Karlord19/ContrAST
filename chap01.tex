@@ -1,10 +1,4 @@
-\chapter{Related work}
-
-A recent study \cite{Maisch26} analyzed plagiarism behavior of first-year computer science students at KIT (Germany) and KTH (Sweden).
-They gave students solutions to problems and asked them to creatively modify them and fill in a form about their modifications.
-The students were allowed to use any tools they wanted, including LLMs.
-The results showed that the high-level structure of the code was often preserved, and the modified code was easily recognizable as a copy of the original code.
-This study tells us that even in the current situation, the plagiarism checkers are worth using at the academic environment.
+\chapter{Related work} \label{sec:related}
 
 \section{Code clones}
 
@@ -167,7 +161,7 @@ This approach easily detects clones with transposed code segments.
 \end{figure}
 
 A tree is a data structure that consists of nodes connected by edges, where each node has a label and zero or more child nodes.
-Tree edit distance, or TED for short, is a measure of similarity between two trees, $T_1$ and $T_2$.
+Unweighted tree edit distance, or unweighted TED for short, is a measure of similarity between two trees, $T_1$ and $T_2$.
 It is defined as the minimum number of edit operations that transforms $T_1$ into $T_2$.
 The edit operations typically include relabeling \ref{fig:ted-rename}, insertion \ref{fig:ted-insert}, and deletion \ref{fig:ted-delete}.
 Insertion of a node X under a node Y means that a consecutive subset S of children of Y are reattached to X, and X is then added as a child of Y at the position of S.
@@ -175,7 +169,8 @@ Deletion of a node X means that X is removed, and its children are reattached to
 It can be easily seen that inserting a node into $T_1$ is equivalent to deleting a node from $T_2$, and vice versa.
 
 In a more general setting, we can assign different cost values to each type of edit operation, and different costs to different labels.
-TED is then defined as the minimum weighted number of edit operations that transforms $T_1$ into $T_2$.
+Weighted TED is then defined as the minimum weighted number of edit operations that transforms $T_1$ into $T_2$.
+By TED we will refer to weighted TED, unless otherwise specified.
 
 The formal definition of TED is as follows \cite{zhang89}:
 \begin{defn}[Tree edit distance]
@@ -212,11 +207,14 @@ The strategy is found in time $$O(n^2)$$ for $n=\max(|T_1|,|T_2|)$.
 The whole algorithm is still limited by $O(n^3)$ time complexity, because it uses the decomposition strategy approach.
 
 Mao \cite{mao23} was the first to show that unweighted TED (with fixed cost of edit operations) can be computed in truly subcubic time, specifically in $$O(n^{2.9546})$$ time.
-It is based on reducing the problem of computing TED to the problem of finding the "max-plus product of bounded-difference matrices", what is known to be solvable in truly subcubic time.
+It is based on reducing the problem of computing TED to the problem of finding the max-plus product of matrices with additional special properties, what is then known to be solvable in truly subcubic time.
+The max-plus product of two matrices $A$ and $B$ is defined as a matrix $C$ where $C[i][j] = \max_k (A[i][k] + B[k][j])$.
 
-Nogler, Polak, Saha, Vassilevska Williams, Xu, and Ye \cite{nogler25} proved that TED is fine-grained equivalent to All-Pairs Shortest Paths (APSP).
-With the fastest algorithm for APSP at their time, the managed to compute TED in time WHY IS THERE NO 'O' IN THERE $$\dfrac{n^3}{2^{\Omega(\sqrt{\log n})}}.$$
+Nogler, Polak, Saha, Vassilevska Williams, Xu, and Ye \cite{nogler25} proved that TED is fine-grained equivalent to All-Pairs Shortest Paths (APSP; we need to find the shortest paths between all pairs of nodes).
+With the fastest algorithm for APSP at their time, the managed to compute TED in time $$\dfrac{n^3}{2^{\Omega(\sqrt{\log n})}}.$$
+This proves that TED (with weighted edit operations) is also solvable in truly subcubic time.
 
 Bounded TED sets an upper bound $k$ for TED, and we only compute the edit distance until it exceeds $k$.
 In this setting, ideally for $k\ll n$, the distance can be computed much faster.
 Das, Gilbert, Hajiaghayi, Kociumaka, Saha, and Saleh \cite{das22} proposed an algorithm that computes the bounded tree edit distance in time $$\tilde{O}(n + poly(k)).$$
+The notation $\tilde{O}$ hides logarithmic factors, and $poly(k)$ denotes a polynomial function of $k$.
