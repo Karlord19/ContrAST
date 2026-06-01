@@ -104,25 +104,44 @@ The level of analysis performed then impacts the types of clones that can be det
 We shortly review some of the existing plagiarism detection tools that accept source code as input, especially those that are relevant to our work or are widely used.
 We focus only on the original ideas behind the tools; many of them have evolved and now include various new approaches and features.
 
-There exist a few parsers that can be easily integrated into a tool for tokenization or parsing.
+There exist a few parsers \cite{treesitter,antlr} that can be easily integrated into a tool for tokenization or parsing \cite{dolos22,song24,zhao25}.
 The normalization step is often implemented as a custom solution, choosing which code constructs to simplify and how to rename identifiers.
 The resulting representation can then be language-agnostic, and the same match detection algorithm instance can be used for every supported language.
 
 Probably the most widely used detector is Moss (Measure of Software Similarity) using the winnowing algorithm \cite{moss03}.
 It primarily operates on source code, but the algorithm itself is textual.
 The code is first parsed and normalized based on the input format and then printed to a string representation.
-All substrings of a given length are hashed, and then all windows of a certain size are created from the sequence of hashes.
+We call a substring of the string representation of length $n$ a $n$-gram.
+All $n$-grams are collected and hashed, and then all windows of a certain size are created from the sequence of hashes.
 From each window, the minimum hash value is selected as a fingerprint.
 The fingerprints are then stored, and the detector quickly finds matching fingerprints between different documents.
 
-JPlag \cite{jplag02} and YAP3 \cite{yap3} compare two documents at a time.
+A tool called sim \cite{sim99} compares two documents at a time.
 First, the code is tokenized and normalized.
-Then, a string tiling algorithm is applied to the token sequences.
+Then, a string alignment algorithm is applied.
+If the aligned tokens are the same, a positive score is given, if they are different, a negative score is given, and if a gap needs to be inserted, a gap penalty is applied.
+The final score is based on the best alignment of the two token sequences.
+
+JPlag \cite{jplag02} also accepts two documents at a time and tokenizes them, but uses a string tiling algorithm on the token sequences.
 It tries to find the longest common substrings between the two sequences, marks them as clones, and removes them from the sequences.
 This process is repeated until no more common substrings of a certain length can be found.
 This approach easily detects clones with transposed code segments.
 
-\section{Tree edit distance}
+NiCad \cite{nicad08} normalizes the code and pretty-prints it to a string representation.
+Then, the fragments are compared line by line, and the longest common subsequences are found.
+
+iClones \cite{iclones09} addresses the problem of needing to run a new analysis on every small change in the codebase, which is very inefficient.
+The idea is to build a suffix tree from the tokenized and normalized code, and update the tree locally and incrementally as the code changes.
+
+Dolos \cite{dolos22} creates fingerprints similar to Moss, but operates on normalized token sequences instead. For each pair of documents, similarity, total overlap and longest shared fragment are computed. Based on those metrics, the candidates are ordered and filtered.
+
+BLEU (BiLingual Evaluation Understudy) \cite{bleu02} is a metric originally designed for evaluating machine translation, with the idea that a good machine translation should be similar to a professional human translation. A sequence of words is considered, all $n$-grams are extracted, with an upper limit on each $n$-gram. The similarity score is based on the number of matching $n$-grams between two documents for different values of $n$.
+
+CodeBLEU \cite{codebleu20} is an adaptation of BLEU for source code. It also considers matching the syntactic AST and the semantic dataflow, in addition to the lexical $n$-grams.
+
+CrystalBLEU \cite{crystalbleu23} differs from BLEU in filtering out completely the most common $n$-grams, as they come from the nature of the language rather that from the specific code fragment.
+
+\subsection{Tree edit distance}
 
 \begin{figure}
     \centering
@@ -178,43 +197,45 @@ Let $c$ be a distance metric that assigns a non-negative cost to each edit opera
 If $S$ is a sequence of edit operations, we define $c(S)$ as the sum of the costs of the edit operations in $S$.
 Let $T_1$ and $T_2$ be two labeled trees.
 The tree edit distance between $T_1$ and $T_2$ is defined as
-$$d(T_1, T_2) = \min \{c(S)\},$$ where $S$ is a sequence of edit operations transforming $T_1$ into $T_2$.
+$$TED(T_1, T_2) = \min \{c(S)\},$$ where $S$ is a sequence of edit operations transforming $T_1$ into $T_2$.
 \end{defn}
 The definition can be easily adapted to the case of forests, which are a sequence of trees.
 
-To compute TED, we shall not directly use the definition, as it is recursively defined and would lead to an exponential time algorithm.
-Instead, we can use dynamic programming to compute the distance in polynomial time.
+The similarity score between two trees can be defined as a function of the edit distance \cite{song24}:
+$$TSED(T_1, T_2) = \max\left(1-\dfrac{TED(T_1, T_2)}{\max(|T_1|, |T_2|)}, 0\right),$$ where $|T|$ is the number of nodes in the tree $T$.
 
-Tai \cite{tai79} proposed an algorithm that computes TED in $$O(|T_1|\cdot |T_2|\cdot depth(T_1)^2\cdot depth(T_2)^2)$$ time, where $|T|$ is the number of nodes in the tree $T$ and $depth(T)$ is the depth of the tree $T$.
-The algorithm uses a dynamic programming approach similar to computing the edit distance between strings, but it also takes into account the hierarchical structure of the trees.
-
-Zhang and Shasha \cite{zhang89} improved the time complexity to $$O(|T_1|\cdot |T_2|\cdot \min(depth(T_1), leaves(T_1))\cdot \min(depth(T_2), leaves(T_2))),$$ where $leaves(T)$ is the number of leaf nodes in the tree $T$.
+Zhang and Shasha \cite{zhang89} computed TED in time complexity $$O(|T_1|\cdot |T_2|\cdot \min(depth(T_1), leaves(T_1))\cdot \min(depth(T_2), leaves(T_2))),$$ where $depth(T)$ is the depth of the tree $T$ and $leaves(T)$ is the number of leaf nodes in the tree $T$.
 The algorithm is based on the concept of keyroots, which are nodes in the tree that have a left sibling, or are the root of the tree.
 The keyroots are exactly the nodes that need a separate computation of the distance.
 
 Klein \cite{klein98} came with an idea of decomposing one of the trees by heavy paths, which are paths that always follow the child with the largest subtree.
 This approach leads to time complexity of $$O(|T_1|^2\cdot |T_2|\cdot \log |T_2|).$$
 
-Dulucq and Touzet \cite{dulucq03} further studied the path decompositions and relevant forests, those are the forests that need to be compared when the path decomposition is applied.
-They computed $\Omega(|T|\cdot \log(|T|))$ to be the lower bound on the number of relevant forests in a tree $T$, making $$\Omega(|T_1|\cdot |T_2|\cdot \log(|T_1|)\cdot \log(|T_2|))$$ the lower bound on the number of pairs of relevant forests when computing TED between the trees $T_1$ and $T_2$.
-
-Demaine, Mozes, Rossman, and Weimann \cite{demaine07} found a new time lower bound for all algorithms based on decomposition strategies to be $$\Omega\left(|T_1|\cdot |T_2|^2\cdot \left(1+\log\left(\dfrac{|T_1|}{|T_2|}\right)\right)\right).$$
-They also proposed a new algorithm that achieves this time complexity, which is optimal among all algorithms based on decomposition strategies.
-
-Pawlik and Augsten \cite{apted15,apted16} were able to find the optimal decomposition strategy for the input trees, and thus achieve the best possible time in the class of all-path algorithms.
-The algorithm is called RTED (Robust Tree Edit Distance), and its descendant with a lower space consumption is called APTED (All Path Tree Edit Distance).
+Pawlik and Augsten \cite{apted15,apted16} proposed the APTED algorithm (All Path Tree Edit Distance) that finds the optimal decomposition strategy for the input trees, and thus achieves the best possible time in the class of all-path algorithms.
 The strategy is found in time $$O(n^2)$$ for $n=\max(|T_1|,|T_2|)$.
 The whole algorithm is still limited by $O(n^3)$ time complexity, because it uses the decomposition strategy approach.
 
-Mao \cite{mao23} was the first to show that unweighted TED (with fixed cost of edit operations) can be computed in truly subcubic time, specifically in $$O(n^{2.9546})$$ time.
-It is based on reducing the problem of computing TED to the problem of finding the max-plus product of matrices with additional special properties, what is then known to be solvable in truly subcubic time.
-The max-plus product of two matrices $A$ and $B$ is defined as a matrix $C$ where $C[i][j] = \max_k (A[i][k] + B[k][j])$.
-
 Nogler, Polak, Saha, Vassilevska Williams, Xu, and Ye \cite{nogler25} proved that TED is fine-grained equivalent to All-Pairs Shortest Paths (APSP; we need to find the shortest paths between all pairs of nodes).
 With the fastest algorithm for APSP at their time, the managed to compute TED in time $$\dfrac{n^3}{2^{\Omega(\sqrt{\log n})}}.$$
-This proves that TED (with weighted edit operations) is also solvable in truly subcubic time.
+This proves that TED is solvable in truly subcubic time.
 
 Bounded TED sets an upper bound $k$ for TED, and we only compute the edit distance until it exceeds $k$.
 In this setting, ideally for $k\ll n$, the distance can be computed much faster.
 Das, Gilbert, Hajiaghayi, Kociumaka, Saha, and Saleh \cite{das22} proposed an algorithm that computes the bounded tree edit distance in time $$\tilde{O}(n + poly(k)).$$
 The notation $\tilde{O}$ hides logarithmic factors, and $poly(k)$ denotes a polynomial function of $k$.
+
+\subsection{Tool comparison}
+
+We shortly describe the results of some comparisons of plagiarism detection tools that accept source code as input.
+
+Hage, Rademaker, and van Vugt \cite{hage11} compare several tools, including JPlag, Moss, and sim, on Java student submissions. They measure how sensitive are the tools to code modifications, and JPlag is found to be more robust to modifications than the other two tools.
+
+Ahadi and Mathieson \cite{ahadi19} compare JPlag, Moss, and sim, on C++ student submissions. They find that sim and Moss are better than JPlag in terms of both precision and recall.
+
+Song, Lothritz, Tang, Bissyadé, and Klein \cite{song24} compute the correlation of several metrics, including TSED and BLEU, on Java code and shortly compare the results using different parsers, tree-sitter \cite{treesitter} and ANTLR \cite{antlr}. They find that the choice of parser has a significant impact on the results. They also show that the performance of TSED is dependent on the parameters of the edit operations.
+
+Dristi and Dwyer \cite{dristi25} focus on the difference between the functionality of the code and the look of the code, and how different metrics capture those aspects. They define the surface similarity with standard edit distance and AST similarity with TED, and show very high correlation with CodeBLEU and moderate correlation with CrystalBLEU.
+
+Ebrahim and Joy \cite{ebrahim26} compare CodeBLEU, CrystalBLEU, TSED, JPlag, and Dolos, on a Java dataset specifically targeting plagiarism cases. They highlight the importance of preprocessing of the input code, and show how it can signifacantly boost the performance of the tools. Dolos and CrystalBLEU outperformed the other tools.
+
+Rahman, Khatoonabadi, and Shihab \cite{rahman26} evaluate generated code quality syntactically with BLEU and structurally with TSED. They find the structural alignment strong and the syntactic alignment moderate.
