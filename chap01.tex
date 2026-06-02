@@ -227,15 +227,26 @@ The notation $\tilde{O}$ hides logarithmic factors, and $poly(k)$ denotes a poly
 \subsection{Tool comparison}
 
 We shortly describe the results of some comparisons of plagiarism detection tools that accept source code as input.
+We do not provide a unified comparison of the tools, as they are often evaluated on different datasets and with different parameters, so the results are not directly comparable.
 
-Hage, Rademaker, and van Vugt \cite{hage11} compare several tools, including JPlag, Moss, and sim, on Java student submissions. They measure how sensitive are the tools to code modifications, and JPlag is found to be more robust to modifications than the other two tools.
+Hage, Rademaker, and van Vugt \cite{hage11} compare several tools, including JPlag, Moss, and sim, on Java student submissions.
+They measure how sensitive are the tools to code modifications, and JPlag is found to be more robust to modifications than the other two tools.
 
-Ahadi and Mathieson \cite{ahadi19} compare JPlag, Moss, and sim, on C++ student submissions. They find that sim and Moss are better than JPlag in terms of both precision and recall.
+Ahadi and Mathieson \cite{ahadi19} compare JPlag, Moss, and sim, on C++ student submissions.
+They find that sim and Moss are better than JPlag in terms of both precision and recall.
 
-Song, Lothritz, Tang, Bissyadé, and Klein \cite{song24} compute the correlation of several metrics, including TSED and BLEU, on Java code and shortly compare the results using different parsers, tree-sitter \cite{treesitter} and ANTLR \cite{antlr}. They find that the choice of parser has a significant impact on the results. They also show that the performance of TSED is dependent on the parameters of the edit operations.
+Song, Lothritz, Tang, Bissyadé, and Klein \cite{song24} compute the correlation of several metrics, including TSED and BLEU, on Java code and shortly compare the results using different parsers, tree-sitter \cite{treesitter} and ANTLR \cite{antlr}.
+They find that the choice of parser has a significant impact on the results.
+They also show that the performance of TSED is dependent on the parameters of the edit operations.
 
-Dristi and Dwyer \cite{dristi25} focus on the difference between the functionality of the code and the look of the code, and how different metrics capture those aspects. They define the surface similarity with standard edit distance and AST similarity with TED, and show very high correlation with CodeBLEU and moderate correlation with CrystalBLEU.
+Dristi and Dwyer \cite{dristi25} focus on the difference between the functionality of the code and the look of the code, and how different metrics capture those aspects.
+They define the surface similarity with standard edit distance and AST similarity with TED, and show very high correlation with CodeBLEU and moderate correlation with CrystalBLEU.
 
-Ebrahim and Joy \cite{ebrahim26} compare CodeBLEU, CrystalBLEU, TSED, JPlag, and Dolos, on a Java dataset specifically targeting plagiarism cases. They highlight the importance of preprocessing of the input code, and show how it can signifacantly boost the performance of the tools. Dolos and CrystalBLEU outperformed the other tools.
+Ebrahim and Joy \cite{ebrahim26} compare CodeBLEU, CrystalBLEU, TSED, JPlag, and Dolos, on a Java dataset specifically targeting plagiarism cases.
+They highlight the importance of preprocessing of the input code, and show how it can signifacantly boost the performance of the tools.
+Dolos and CrystalBLEU outperformed the other tools.
 
-Rahman, Khatoonabadi, and Shihab \cite{rahman26} evaluate generated code quality syntactically with BLEU and structurally with TSED. They find the structural alignment strong and the syntactic alignment moderate.
+Rahman, Khatoonabadi, and Shihab \cite{rahman26} propose a large corpus of Python classes with skeletons.
+They evaluate generated code by large language models against the reference implementations in the corpus.
+They measure the syntactic similarity with BLEU and structural similarity with TSED.
+They find the structural alignment strong and the syntactic alignment moderate.

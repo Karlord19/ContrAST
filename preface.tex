@@ -5,34 +5,19 @@ In order to learn programming, one must write a lot of code.
 It is of no use to copy code written by someone else, even if it is correct and solves the problem.
 Students are often aware of this fact, but they still sometimes copy from others; and the teachers need appropriate tools to detect such cases of plagiarism.
 
-We will focus on the current situation at the Faculty of Mathematics and Physics at the Charles University, where the assignments and exams for introductory programming courses are submitted in the form of source code files to an online system called Recodex.
-Teachers configure a set of test cases for each assignment, and the system automatically runs those tests to check the correctness of the submitted programs.
-In homework assignments, students are able to submit code written by AI tools, but in exams in an offline environment, we only care about plagiarism between students, so we will not focus on AI-generated code in this thesis.
+Currently at the Faculty of Mathematics and Physics at the Charles University, students submit their programming assignments and exams to an online system called ReCodEx \cite{recodex}, which automatically runs a set of test cases to check the correctness of the submitted programs.
+ReCodEx also has a string-based plagiarism-detection tool and a Python-specific syntax-driven tool \cite{saksa20}, but they have their limitations.
 
-Recodex provides a plagiarism-detection tool called Comparatrix.
-It is based on a string representation of the source code, only removing comments and whitespace.
-All substrings of the code are stored in a database, and the tool can quickly find identical segments of code between different submissions.
-This approach has a few disadvantages primarily because the full lexical and semantic analysis is not performed.
-The fragments do not correspond to syntactical structures and the tool only detects identical code.
-Slightly modified code, for example with renamed identifiers, will not be detected at all.
-
-To address these issues, we need to perform at least some level of syntactic (and possibly semantic) analysis of the code, then store the resulting structures efficiently in a database, and finally search for structurally similar code fragments.
-This naturally leads us to Abstract Syntax Trees (ASTs) as the main data structure for representing the code, and a measure of code similarity applicable to labeled trees.
-
-Languages primarily used in Recodex are Python, C\#, and C++.
-There already is a syntax-driven tool for detecting plagiarism in Recodex focused on Python submissions \cite{saksa20}.
-We did not use it as a basis for our work, as we wanted another implementation for storage and add a similarity measure.
+We aim to implement a more robust plagiarism-detection tool with a syntax-driven approach.
+Languages primarily used in ReCodEx are Python, C\#, and C++.
 We then targeted C++, its our favorite language.
-The core of our tool shall be language-agnostic, and to add support for other languages, we only need to implement the parsing, AST construction, and a short configuration for those languages.
+The core of our tool shall be language-agnostic, and to add support for other languages, we only need to implement parsing, abstract syntax tree (AST) construction, and a short configuration for those languages.
 
-Some C++ parsers are available and would be absolutely sufficient for our purposes.
-However, another diploma thesis is currently being written at our department, which needs a full semantic analysis of the code, and thus a more complex parser.
-
-As part of a research project preceding this thesis, we have already implemented a tool called atc (short for AST to comparatree) that extracts ASTs from C++ code using clang and stores them in a database.
-The database is called comparatree, maintained by the supervisor RNDr. David Bednárek, Ph.D., and is designed to very efficiently store ASTs.
-The main contribution of this thesis is a tool called ContrAST, which implements a similarity measure for ASTs and creates reports of similar code fragments, that can be imported into Recodex.
-Recodex will then use these reports to show the teachers which submissions are similar and which code fragments they have in common.
+As part of a research project preceding this thesis, we have already implemented a tool for extracting ASTs from C++ code using clang.
+We then store those ASTs in a database, maintained by the supervisor RNDr. David Bednárek, Ph.D., designed to very efficiently store the ASTs.
+The main contribution of this thesis is a tool called ContrAST, which implements a similarity measure for ASTs and creates reports of similar code fragments, that can be imported into ReCodEx. ReCodEx will then use these reports to show the teachers which submissions are similar and which code fragments they have in common.
 
 The structure of the thesis is as follows.
 In \autoref{sec:related}, we review the related work in the field of plagiarism detection, especially in the context of programming assignments.
+In \autoref{sec:enterprise}, we describe the overall architecture of the system we are building and the environment in which it is used.
 The rest of the thesis will be.

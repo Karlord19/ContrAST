@@ -1,0 +1,13 @@
+@startuml overall-architecture
+component "ReCodEx" as recodex
+component atc as atc
+database "comparatree\nnew ASTs" as newcomparatree
+database "comparatree\nold ASTs" as oldcomparatree
+component "ContrAST" as contrast
+recodex -> atc: new files
+atc -> newcomparatree: new parsed ASTs
+newcomparatree --> contrast: new ASTs
+oldcomparatree -> contrast: old ASTs
+contrast -> oldcomparatree: add new ASTs
+contrast --> recodex: report of similar\ncode fragments
+@enduml

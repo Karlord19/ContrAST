@@ -15,31 +15,31 @@
 
 % Thesis title in English (exactly as in the official assignment)
 % (Note: \xxx is a "ToDo label" which makes the unfilled visible. Remove it.)
-\def\ThesisTitle{\xxx{Thesis title}}
+\def\ThesisTitle{Syntax-driven similarity analysis of source code}
 
 % Author of the thesis (you)
-\def\ThesisAuthor{\xxx{Name Surname}}
+\def\ThesisAuthor{Klára Pernicová}
 
 % Year when the thesis is submitted
-\def\YearSubmitted{\xxx{YEAR}}
+\def\YearSubmitted{2026}
 
 % Name of the department or institute, where the work was officially assigned
 % (according to the Organizational Structure of MFF UK in English,
 % see https://www.mff.cuni.cz/en/faculty/organizational-structure,
 % or a full name of a department outside MFF)
-\def\Department{\xxx{Name of the department}}
+\def\Department{Department of Software Engineering}
 
 % Is it a department (katedra), or an institute (ústav)?
-\def\DeptType{\xxx{Department}}
+\def\DeptType{Department}
 
 % Thesis supervisor: name, surname and titles
-\def\Supervisor{\xxx{Supername Supersurname}}
+\def\Supervisor{RNDr. David Bednárek, Ph.D.}
 
 % Supervisor's department (again according to Organizational structure of MFF)
-\def\SupervisorsDepartment{\xxx{department}}
+\def\SupervisorsDepartment{Department of Software Engineering}
 
 % Study programme (does not apply to rigorosum theses)
-\def\StudyProgramme{\xxx{study programme}}
+\def\StudyProgramme{Computer Science - Software and Data Engineering}
 
 % An optional dedication: you can thank whomever you wish (your supervisor,
 % consultant, who provided you with tea and pizza, etc.)
@@ -61,19 +61,14 @@ TODO:
 
 % Abstract (recommended length around 80-200 words; this is not a copy of your thesis assignment!)
 \def\Abstract{%
-\xxx{Use the most precise, shortest sentences that state what problem the
-thesis addresses, how it is approached, pinpoint the exact result achieved, and
-describe the applications and significance of the results. Highlight anything
-novel that was discovered or improved by the thesis. Maximum length is 200
-words, but try to fit into 120. Abstracts are often used for deciding if
-a reviewer will be suitable for the thesis; a well-written abstract thus
-increases the probability of getting a reviewer who will like the thesis.}
+We don't want students to copy each other's code, but we also don't want teachers to check every single submission manually or even every single pair of submissions for similarity.
+So we bring in a tool that eats C/C++ source code, extracts the relevant parts of their abstract syntax trees, and compares them to find similar code fragments.
 }
 
 % 3 to 5 keywords (recommended) separated by \sep
 % Keywords are useful for indexing and searching for the theses by topic.
 \def\ThesisKeywords{%
-\xxx{keyword\sep key phrase}
+code similarity\sep plagiarism detection
 }
 
 % If any of your metadata strings contains TeX macros, you need to provide
@@ -92,14 +87,14 @@ increases the probability of getting a reviewer who will like the thesis.}
 % If you are studing in a Czech programme, you also need to provide metadata in Czech:
 % (in English programmes, this is not used anywhere)
 
-\def\ThesisTitleCS{\xxx{Název práce česky}}
-\def\DepartmentCS{\xxx{Název katedry česky}}
-\def\DeptTypeCS{\xxx{Katedra}}
-\def\SupervisorsDepartmentCS{\xxx{katedra vedoucího}}
-\def\StudyProgrammeCS{\xxx{studijní program}}
+\def\ThesisTitleCS{Syntaxí řízená analýza podobnosti zdrojových kódů}
+\def\DepartmentCS{Katedra softwarového inženýrství}
+\def\DeptTypeCS{Katedra}
+\def\SupervisorsDepartmentCS{Katedra softwarového inženýrství}
+\def\StudyProgrammeCS{Informatika - Softwarové a datové inženýrství}
 
 \def\ThesisKeywordsCS{%
-\xxx{klíčová slova\sep klíčové fráze}
+podobnost kódu\sep detekce plagiátů
 }
 
 \def\AbstractCS{%
