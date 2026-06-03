@@ -1,0 +1,37 @@
+@startuml comparatree-core-deduplication
+rectangle "a9: DeclRefExpr(_0): _0" as declrefexpr {
+    rectangle "_0" as drechild
+}
+
+rectangle "a11: Add(_0, _1): _0+_1" as add {
+    rectangle "a9(_0)" as addchild0
+    rectangle "a9(_1)" as addchild1
+}
+
+rectangle "a13: Assign(_0, _1, _2): _0 = _1 + _2" as assign1 {
+    rectangle "a9(_0)" as assign1child0
+    rectangle "a11(_1, _2)" as assign1child1
+    assign1child0 -[hidden]right-> assign1child1
+}
+
+rectangle "a14: Assign(_0, _1): _0 = _1 + _0" as assign2 {
+    rectangle "a9(_0)" as assign2child0
+    rectangle "a11(_1, _0)" as assign2child1
+    assign2child0 -[hidden]right-> assign2child1
+}
+
+rectangle "a15: Compound(_0, _1, _2): { _0 = _1 + _2; _0 = _1 + _0; }" as compoundstmt {
+    rectangle "a13(_0, _1, _2)" as compoundstmtchild0
+    rectangle "a14(_0, _1)" as compoundstmtchild1
+    compoundstmtchild0 -[hidden]right-> compoundstmtchild1
+}
+
+compoundstmtchild0 --> assign1
+compoundstmtchild1 --> assign2
+assign1child0 -[norank]-> declrefexpr
+assign1child1 --> add
+assign2child0 -[norank]-> declrefexpr
+assign2child1 --> add
+addchild0 --> declrefexpr
+addchild1 --> declrefexpr
+@enduml

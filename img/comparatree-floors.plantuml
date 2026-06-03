@@ -1,0 +1,11 @@
+@startuml comparatree-floors
+folder "batch" as b
+folder "solution" as s
+file "module" as m
+card "global\ncore node" as c
+card "global\nloc node" as l
+s -up-> b
+m -up-> s
+m --> c
+m --> l
+@enduml

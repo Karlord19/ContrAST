@@ -1,1 +1,54 @@
 \chapter{comparatree}\label{sec:comparatree}
+
+comparatree is a C++ library written by RNDr. David Bednárek, Ph.D., aiming to very efficiently store abstract syntax trees (ASTs) of source code with custom metadata.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.35\textwidth]{img/comparatree-floors.eps}
+  \caption{Organization of files in comparatree.}
+  \label{fig:comparatree-floors}
+\end{figure}
+
+As shown in \autoref{fig:comparatree-floors}, the data in comparatree is organized into three layers:
+\begin{itemize}
+\item Module: A single file is represented by a module, which contains a structure root (global core node), a location root (global loc node), and a solution ID.
+\item Solution: A solution corresponds to a single submission, and contains an author ID and a batch ID.
+\item Batch: A batch corresponds to a set of submissions, for example all the submissions for a single assignment collected during one day.
+\end{itemize}
+
+\section{Core storage}
+
+The core storage represents all the structures of the ASTs.
+By a structure we mean a subtree of the AST, which has its own kind (eg. variable declaration or function call) and a list of children (which are also structures).
+All the concrete names used in the structures are stored in modules and are not part of the core storage.
+
+Each unique structure is stored only once and has a unique ID starting from 0.
+When we build the core storage, all the children of a structure must already be stored; implying that the structures are stored in a bottom-up manner and the parent's ID is always greater than the IDs of its children.
+
+\SaveVerb{verb:comparatree-core-deduplication}|{ a = b + c; a = b + a; }|
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{img/comparatree-core-deduplication.eps}
+  \caption{The deduplication in core storage of \protect\UseVerb{verb:comparatree-core-deduplication}.}
+  \label{fig:comparatree-core-deduplication}
+\end{figure}
+
+Let's closely look at the deduplication using the example in \autoref{fig:comparatree-core-deduplication}.
+First, we extract away the concrete names.
+The compound statement then goes from \UseVerb{verb:comparatree-core-deduplication} to \verb|{ _0 = _1 + _2; _0 = _1 + _0; }|, where \verb|_0|, \verb|_1|, and \verb|_2| are different placeholders for the concrete names.
+The compound statement has two children; an assignment expression \verb|a13| that receives placeholders \verb|_0, _1, _2|, and an assignment expression \verb|a14| that receives placeholders \verb|_0, _1|.
+The assignment expression \verb|a13| has two children; a variable reference \verb|a9| that receives placeholder \verb|_0|, and a binary operator \verb|a11| that receives placeholders \verb|_1, _2|.
+The binary operator \verb|a11| has two children; both are variable reference \verb|a9| and one of them receives placeholder \verb|_0| and the other receives placeholder \verb|_1|.
+
+For reconstruction of the original code from the example in \autoref{fig:comparatree-core-deduplication} with the concrete names, each structure receives the concrete names for its placeholders.
+The compound statement receives names \verb|a, b, c|.
+It prints \verb|{|, then prints the first child \verb|a13| with names \verb|a, b, c|, then \verb|; |, then the second child \verb|a14| with names \verb|a, b|, and finally \verb|}|.
+The assignment expression \verb|a13| receives names \verb|a, b, c|, prints the first child \verb|a9| with name \verb|a|, then prints \verb| = |, and finally prints the second child \verb|a11| with names \verb|b, c|.
+The binary operator \verb|a11| receives names \verb|b, c|, prints the first child \verb|a9| with name \verb|b|, then prints \verb| + |, and finally prints the second child \verb|a9| with name \verb|c|.
+The variable reference \verb|a9| just prints the name it receives.
+
+See how the child structures do not have a reference to their parent structure, so that they can be shared by multiple parent structures and used in different contexts.
+In the example in \autoref{fig:comparatree-core-deduplication}, the binary operator \verb|a11| is shared by both assignment expressions \verb|a13| and \verb|a14|, once as \verb|b + c| and once as \verb|b + a|.
+
+Each module has a global core node that points to the structure of the whole file, and a list of concrete names that are used in the file.
+The concrete names are stored in the order of their first occurrence in the file, so we can directly use it to reconstruct the original code by sending this list of names to the global core node.
