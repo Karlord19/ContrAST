@@ -4,14 +4,14 @@ comparatree is a C++ library written by RNDr. David Bednárek, Ph.D., aiming to 
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.35\textwidth]{img/comparatree-floors.eps}
+  \includegraphics[width=0.75\textwidth]{img/comparatree-floors.eps}
   \caption{Organization of files in comparatree.}
   \label{fig:comparatree-floors}
 \end{figure}
 
 As shown in \autoref{fig:comparatree-floors}, the data in comparatree is organized into three layers:
 \begin{itemize}
-\item Module: A single file is represented by a module, which contains a structure root (global core node), a location root (global loc node), and a solution ID.
+\item Module: A single file is represented by a module, which contains a structure root (global core node), a location root (global loc node), used identifier names, absolute location of the root, and a solution ID.
 \item Solution: A solution corresponds to a single submission, and contains an author ID and a batch ID.
 \item Batch: A batch corresponds to a set of submissions, for example all the submissions for a single assignment collected during one day.
 \end{itemize}
@@ -52,3 +52,44 @@ In the example in \autoref{fig:comparatree-core-deduplication}, the binary opera
 
 Each module has a global core node that points to the structure of the whole file, and a list of concrete names that are used in the file.
 The concrete names are stored in the order of their first occurrence in the file, so we can directly use it to reconstruct the original code by sending this list of names to the global core node.
+
+\section {Location storage}
+
+The location storage represents the locations of the structures in the source code.
+It is completely separate from the core storage, so that the same structure can be used in different locations and contexts.
+
+We distinguish those types of locations:
+\begin{itemize}
+\item Absolute location: A concrete location in a file, represented by a file ID, a line number start and end, a column number start and end, and a character offset start and end.
+\item Size location: A location span, represented by a length in lines, columns, and characters. Written as \verb|<lines, columns, chars>|.
+\item Relative location: A location relative to another one, represented by a line and a column number offset. Written as \verb|{line_offset, column_offset}|. The offset is added (or subtracted if negative) to a reference location to get the resulting location.
+\item Location node: A node in the location storage, represented by a size location and a list of children. Each child is represented as a relative location and a location node ID.
+\end{itemize}
+
+The location storage stores only the location nodes and is built in a bottom-up manner.
+Each unique location node is stored only once and has a unique ID starting from 0.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.6\textwidth]{img/comparatree-loc-deduplication.eps}
+  \caption[The deduplication in location storage.]{The deduplication in location storage of\\\protect\parbox[b]{0.42\linewidth}{\ttfamily\raggedright\textbraceleft\\\ \ a = b + c;\\\ \ a = b + a;\\\textbraceright}}
+  \label{fig:comparatree-loc-deduplication}
+\end{figure}
+
+In \autoref{fig:comparatree-loc-deduplication}, we can see the deduplication in location storage corresponding to the same code as in \autoref{fig:comparatree-core-deduplication}.
+The compound statement corresponds to the node \verb|L9| and has two children \verb|L8|.
+The first child is shifted by \verb|{1,2}|, meaning that it starts \verb|1| line and \verb|2| columns after the start of the compound statement.
+Both assignment expressions correspond to the same node \verb|L8|, but beware that their locations are different because of the different relative location from the compound statement.
+The node \verb|L8| has a child \verb|L5| that is not shifted, meaning that it starts at the same location as the assignment expression, and a child \verb|L6| that is shifted by \verb|4| columns.
+The binary operator in both assignments corresponds to the node \verb|L6|.
+It has one child \verb|L5| that is not shifted, and another child \verb|L5| that is shifted by \verb|4| columns.
+Every variable reference in this example corresponds to the same node \verb|L5|.
+
+Beware that if one of the assignments in \autoref{fig:comparatree-loc-deduplication} was written with different spaces in between, for example \verb|a=b + c;|, it would have a different location node than the other assignment.
+In this example, the \verb|b + c| part is written as before, so it would still correspond to the same node \verb|L6|.
+
+Each module has an absolute location corresponding to the global loc node.
+We can reconstruct the absolute location of any structure in the core storage.
+We start with the absolute location of the module from the global core node and the global loc node.
+The sequence of children of a location node corresponds to the sequence of children of the core node, so we can easily descend in both the location storage and the core storage at the same time.
+We apply the relative location along the way.

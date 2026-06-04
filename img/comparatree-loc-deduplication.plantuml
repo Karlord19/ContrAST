@@ -1,0 +1,31 @@
+@startuml comparatree-loc-deduplication
+rectangle "L9<3,0,28>" as l9 {
+    rectangle "{1,2}" as l9c0
+    rectangle "{2,2}" as l9c1
+    l9c0 -[hidden]right-> l9c1
+}
+
+rectangle "L8<0,8,8>" as l8 {
+    rectangle "{0,0}" as l8c0
+    rectangle "{0,4}" as l8c1
+    l8c0 -[hidden]right-> l8c1
+}
+
+rectangle "L6<0,4,4>" as l6 {
+    rectangle "{0,0}" as l6c0
+    rectangle "{0,4}" as l6c1
+    l6c0 -[hidden]right-> l6c1
+}
+
+rectangle "L5<0,0,0>" as l5 {
+  card " " as inv #transparent;line:transparent
+}
+
+l9c0 --> l8
+l9c1 --> l8
+l8c0 -[norank]-> l5
+l8c1 --> l6
+l6c0 --> l5
+l6c1 --> l5
+
+@enduml

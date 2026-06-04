@@ -4,8 +4,12 @@ folder "solution" as s
 file "module" as m
 card "global\ncore node" as c
 card "global\nloc node" as l
+card "identifier\nnames" as n
+card "absolute\nlocation" as a
 s -up-> b
 m -up-> s
 m --> c
 m --> l
+m --> n
+m --> a
 @enduml
