@@ -224,6 +224,9 @@ In this setting, ideally for $k\ll n$, the distance can be computed much faster.
 Das, Gilbert, Hajiaghayi, Kociumaka, Saha, and Saleh \cite{das22} proposed an algorithm that computes the bounded tree edit distance in time $$\tilde{O}(n + poly(k)).$$
 The notation $\tilde{O}$ hides logarithmic factors, and $poly(k)$ denotes a polynomial function of $k$.
 
+Fan, Lee, and Zhang \cite{xted24} analyzed the inner dependencies of subtasks when computing TED, and implemented a parallel algorithm for GPU.
+They achieved up to $42$times speedup over APTED.
+
 \subsection{Tool comparison}
 
 We shortly describe the results of some comparisons of plagiarism detection tools that accept source code as input.

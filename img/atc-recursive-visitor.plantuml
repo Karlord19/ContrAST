@@ -1,0 +1,21 @@
+@startuml atc-recursive-visitor
+card "traverse" as t
+card "traverse\nfirst child" as tc1
+card "traverse\nsecond child" as tc2
+card "walk up from" as w
+card "walk up from\nsuper" as ws
+card "walk up from\nsuper super" as wss
+card "visit" as v
+card "visit\nas super" as vs
+card "visit\nas super super" as vss
+t -d-> tc1 : 1
+t -d-> tc2 : 2
+t -d-> w : 3
+w -d-> ws : 4
+ws -d-> wss : 5
+wss -> vss : 6
+ws -> vs : 7
+w -> v : 8
+tc1 -[hidden]right-> tc2
+tc2 -[hidden]right-> w
+@enduml
