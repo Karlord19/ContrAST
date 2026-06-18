@@ -99,14 +99,35 @@ The level of analysis performed then impacts the types of clones that can be det
 \item Semantic: The code is analyzed to extract its semantics. This can be done using program dependence graphs, information retrieval techniques, artificial intelligence, \dots
 \end{itemize}
 
+\section{Syntactic analysis of source code}
+
+We can use Flex \cite{flex} and Bison \cite{bison} as a lexer and parser, but it requires us to write a grammar for the language we want to parse.
+It is rather difficult to write a complete grammar for a complex language, and it is also difficult to keep it up to date with the language evolution.
+
+Doxygen \cite{doxygenparser} uses Flex to tokenize the code and then builds a simple AST.
+It needs to handle documentation blocks, compiler directives, and incomplete code, all under custom settings defined by the user.
+
+Python has a standard library module \cite{pythonast} for inspecting the AST of Python code.
+It is used by Saksa \cite{saksa20} for parsing Python code and then hashing the resulting ASTs to find identical code fragments.
+
+Similarly to Python, Java and C\# also have their own standard modules for inspecting the AST of Java \cite{javaast} and C\# \cite{csharpast} code, respectively.
+Native support from the official distributions ensures the correctness and up-to-dateness of the modules, and also provides all the information about the code and AST.
+
+Tree-sitter \cite{treesitter} is a parser generator tool (generates parser from a grammar) and an incremental parsing library (it is able to update the parse tree as the code changes).
+It provides parsers for many programming languages and has a wide range of bindings for different programming languages for easy integration into various tools \cite{dolos22}.
+
+ANTLR \cite{antlr} is a parser generator tool.
+It also generates tree walkers that make it easy to traverse the parse tree.
+It provides grammars for many programming languages, but users often create their own grammars for specific data formats, such as query parsing in Twitter search \cite{antlr}.
+
+Clang offers libraries for building tools that analyze and transform C/C++ code.
+It provides a powerful API for inspecting and manipulating the AST, and is able to do full semantic analysis of the code.
+It provides LibTooling \cite{libtooling} for building standalone tools, LibFormat \cite{libformat} for automatic code formatting, LibASTMatchers \cite{libastmatchers} for searching for specific AST nodes, and much more.
+
 \section{Clone detection tools}
 
 We shortly review some of the existing plagiarism detection tools that accept source code as input, especially those that are relevant to our work or are widely used.
 We focus only on the original ideas behind the tools; many of them have evolved and now include various new approaches and features.
-
-There exist a few parsers \cite{treesitter,antlr} that can be easily integrated into a tool for tokenization or parsing \cite{dolos22,song24,zhao25}.
-The normalization step is often implemented as a custom solution, choosing which code constructs to simplify and how to rename identifiers.
-The resulting representation can then be language-agnostic, and the same match detection algorithm instance can be used for every supported language.
 
 Probably the most widely used detector is Moss (Measure of Software Similarity) using the winnowing algorithm \cite{moss03}.
 It primarily operates on source code, but the algorithm itself is textual.
@@ -135,7 +156,7 @@ The idea is to build a suffix tree from the tokenized and normalized code, and u
 
 Dolos \cite{dolos22} creates fingerprints similar to Moss, but operates on normalized token sequences instead. For each pair of documents, similarity, total overlap and longest shared fragment are computed. Based on those metrics, the candidates are ordered and filtered.
 
-BLEU (BiLingual Evaluation Understudy) \cite{bleu02} is a metric originally designed for evaluating machine translation, with the idea that a good machine translation should be similar to a professional human translation. A sequence of words is considered, all $n$-grams are extracted, with an upper limit on each $n$-gram. The similarity score is based on the number of matching $n$-grams between two documents for different values of $n$.
+BLEU (BiLingual Evaluation Understudy) \cite{bleu02} is a metric originally designed for evaluating machine translation, with the idea that a good machine translation should be similar to a professional human translation. A sequence of words is considered, all $n$-grams are extracted, with an upper limit on $n$. The similarity score is based on the number of matching $n$-grams between two documents.
 
 CodeBLEU \cite{codebleu20} is an adaptation of BLEU for source code. It also considers matching the syntactic AST and the semantic dataflow, in addition to the lexical $n$-grams.
 
@@ -143,7 +164,7 @@ CrystalBLEU \cite{crystalbleu23} differs from BLEU in filtering out completely t
 
 \subsection{Tree edit distance}
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
