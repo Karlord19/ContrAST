@@ -32,6 +32,7 @@ We choose to leave the \verb|Traverse*| methods unchanged, as they provide the d
 We override the \verb|WalkUpFrom*| methods to capture the needed information from the AST nodes and we do not include the calls to the superclass methods and the calls to the \verb|Visit*| methods.
 This leads to visiting each node only once.
 If we did not override some specific \verb|WalkUpFrom*| method, it would call the superclass method and then its superclass method, and so on, until it reaches a \verb|WalkUpFrom*| method that we did override and we can collect at least some information from the node.
+We call such behavior a fallback; when we do not visit the node directly, but through its superclass.
 
 We can also use the hierarchy of the node classes for extracting different levels of information about the node.
 Each class adds some specific information on top of the information captured by its superclasses.
@@ -41,4 +42,33 @@ We also build the type descriptors according to the type hierarchy of the AST no
 
 \section{Statistics}
 
-Copy from project or create new ones??
+The statistics were primarily collected during the research project, as the results have directly influenced the design of the tool and the choice of the AST nodes to capture.
+
+We collected about 24K submissions from ReCodEx in introductory and advanced C++ courses on 24th July 2025, containing about 43K source files.
+The data is not publicly available.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.5\textwidth]{img/atc-node-kinds.eps}
+  \caption{Occurrences of different AST node kinds. The node kinds are on the x-axis, on the y-axis is the percentage of files where they occur at least once. The line separates the node kinds that we capture in comparatree from those that we do not capture. From 150 collected node kinds, we capture about 80.}
+  \label{fig:atc-node-kinds}
+\end{figure}
+
+The clang AST contains a lot of different node types, and we are not able to capture all of them.
+\autoref{fig:atc-node-kinds} shows the occurrences of different node kinds in the dataset.
+We set 9 percent as a threshold for capturing the node kinds in comparatree, which means that we capture all node kinds that occur in at least 9 percent of the files.
+This was set as a required minimum; but we also captured about 20 node kinds that correspond to important super classes, as we can still collect the most significant information about the node through a fallback.
+
+We then counted the fallbacks, as it measures the quality of the resulting ASTs.
+From 27M processed clang AST nodes, we had 127K fallbacks, which is about 0.5 percent of the nodes.
+
+When a node is captured through a fallback, it might not contain all the information that we could capture if we visited the node directly.
+Specifically, we might not find all of the node's children.
+Those child nodes are traversed by the framework, but are not connected to the parent node, and thus are not present in the resulting module in comparatree.
+
+We call off-tree nodes the nodes that do not belong to any module in comparatree, as they were forgotten during the use of fallbacks.
+From 108M nodes in the resulting comparatree, we had 845K off-tree nodes, which is about 0.8 percent of the nodes.
+Note that we refer to the number of nodes we created in comparatree, not the number of nodes in the clang AST.
+The tool creates intermediate nodes in comparatree that do not have a direct counterpart in the clang AST, and thus the number of nodes in comparatree is not the same as the number of nodes in the clang AST.
+
+The time to process a file by atc is 0.9 seconds on average, of which only 0.9 percent is spent in our code, and the rest is spent in clang for generating the AST.
