@@ -3,24 +3,24 @@
 
 In order to learn programming, one must write a lot of code.
 It is of no use to copy code written by someone else, even if it is correct and solves the problem.
-Students are often aware of this fact, but they still sometimes copy from others; and the teachers need appropriate tools to detect such cases of plagiarism.
+Students are often aware of this fact, but they still sometimes copy from others; therefore, teachers need appropriate tools to detect such cases of plagiarism.
 
-Currently at the Faculty of Mathematics and Physics at the Charles University, students submit their programming assignments and exams to an online system ReCodEx \cite{recodex}, which automatically runs a set of test cases to check the correctness of the submitted programs.
+Currently at the Faculty of Mathematics and Physics at Charles University, students submit their programming assignments and exams to an online system ReCodEx \cite{recodex}, which automatically runs a set of test cases to check the correctness of the submitted programs.
 ReCodEx also has a string-based plagiarism-detection tool \cite{comparatrix}, but it has its limitations.
 
 We aim to implement a more robust plagiarism-detection tool with a syntax-driven approach.
 Languages primarily used in ReCodEx are Python, C\#, and C++.
-We then targeted C++, its our favorite language.
+We decided to focus on C++, because the supervisor of this thesis teaches a few courses in C++ and needs to grade a lot of C++ assignments and exams.
 The core of our tool shall be language-agnostic, and to add support for other languages, we only need to implement parsing, abstract syntax tree (AST) construction, and a short configuration for those languages.
 
-As part of a research project preceding this thesis, we have already implemented a tool atc \cite{atc} for extracting ASTs from C++ code using clang.
-We then store those ASTs with a very efficient library comparatree \cite{comparatree}.
-The main contribution of this thesis is a tool called ContrAST \cite{contrast}, which implements a similarity measure for ASTs and creates reports of similar code fragments, that can be imported into ReCodEx.
+As part of a research project preceding this thesis, we have already implemented a tool \texttt{atc} \cite{atc} for extracting ASTs from C++ code using Clang.
+We then store those ASTs with a very efficient library \texttt{comparatree} \cite{comparatree}.
+The main contribution of this thesis is a tool called \texttt{ContrAST} \cite{contrast}, which implements a similarity measure for ASTs and creates reports of similar code fragments that can be imported into ReCodEx.
 ReCodEx will then use these reports to show the teachers which submissions are similar and which code fragments they have in common.
 
 The structure of the thesis is as follows.
-In \autoref{sec:related}, we review the related work in the field syntax analysis of source code, searching for similar pieces of code and plagiarism detection.
+In \autoref{sec:related}, we review the related work in the field of syntax analysis of source code, searching for similar pieces of code and plagiarism detection.
 In \autoref{sec:enterprise}, we describe the overall architecture of the system we are building and the environment in which it is used.
-In \autoref{sec:comparatree}, we describe the comparatree library, which is used for storing ASTs and metadata.
-In \autoref{sec:atc}, we describe a C++ parser, which extracts the relevant information from the ASTs and stores it in comparatree.
-In \autoref{sec:contrast}, we describe the ContrAST tool, which implements similarity measures for ASTs and generates ReCodEx reports of similar code fragments.
+In \autoref{sec:comparatree}, we describe the \texttt{comparatree} library, which is used for storing ASTs and metadata.
+In \autoref{sec:atc}, we describe a C++ parser, which extracts the relevant information from the ASTs and stores it in \texttt{comparatree}.
+In \autoref{sec:contrast}, we describe the \texttt{ContrAST} tool, which implements similarity measures for ASTs and generates ReCodEx reports of similar code fragments.

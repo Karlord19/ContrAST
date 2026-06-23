@@ -15,7 +15,7 @@
 
 % Thesis title in English (exactly as in the official assignment)
 % (Note: \xxx is a "ToDo label" which makes the unfilled visible. Remove it.)
-\def\ThesisTitle{Syntax-driven similarity analysis of source code}
+\def\ThesisTitle{Syntax-driven similarity analysis of~source code}
 
 % Author of the thesis (you)
 \def\ThesisAuthor{Klára Pernicová}
@@ -44,25 +44,20 @@
 % An optional dedication: you can thank whomever you wish (your supervisor,
 % consultant, who provided you with tea and pizza, etc.)
 \def\Dedication{%
-\xxx{Dedication.\newline
-TODO:
-\begin{itemize}
-    \item intro: motivace + definice
-    \item existujici algoritmy a programy
-    \item celkova architektura (+ integrace do recodexu)
-    \item comparatree
-    \item clangast
-    \item contrast
-    \item o tech komponentach
-    \item hodnoceni vysledku
-    \item zaver
-\end{itemize}.}
+First and foremost, I would like to thank my supervisor, David Bednárek, for his guidance and infinite patience.
+I would also like to thank my friends for making this journey much more fun and much less productive.
+My thank you also goes to my family, for supporting me and keeping me well-fed.
+Finally, I want to thank Marian, Lukáš, and Prokop for their constructive feedback on my bad ideas.
 }
 
 % Abstract (recommended length around 80-200 words; this is not a copy of your thesis assignment!)
 \def\Abstract{%
-We don't want students to copy each other's code, but we also don't want teachers to check every single submission manually or even every single pair of submissions for similarity.
-So we bring in a tool that eats C/C++ source code, extracts the relevant parts of their abstract syntax trees, and compares them to find similar code fragments.
+Students submit their programming assignments to ReCodEx, an online system that automatically evaluates code correctness and performance, and detects identical text segments to flag potential plagiarism.
+However, direct text matching is not sufficient for slightly modified code.
+We propose a syntax-driven plagiarism detection tool that analyzes the similarity of code fragments.
+The tool is based on an abstract syntax tree representation of the code and a comparison algorithm that computes a similarity score between code fragments.
+It generates a report with potentially plagiarized code fragments and sends it to ReCodEx, where the results are visualized for the teachers.
+The system remains open to further improvements, such as integrating new similarity metrics or extending support to additional programming languages.
 }
 
 % 3 to 5 keywords (recommended) separated by \sep

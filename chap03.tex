@@ -1,21 +1,21 @@
-\chapter{comparatree}\label{sec:comparatree}
+\chapter{\texttt{comparatree}}\label{sec:comparatree}
 
-comparatree \cite{comparatree} is a C++ library aiming to very efficiently store abstract syntax trees (ASTs) of source code with custom metadata.
+\texttt{comparatree} \cite{comparatree} is a C++ library aiming to store abstract syntax trees (ASTs) of source code very efficiently with custom metadata.
 
-We need comparatree to be adequately storage efficient, as we want to perform various analyses on large datasets in memory.
-The permanent storage of comparatree instances is also important, because it stores the parsed submissions.
-We then do not need to store the original source code and parse it again, which saves a lot of time and space.
+We need \texttt{comparatree} to be adequately storage efficient, as we want to perform various analyses on large datasets in memory.
+The permanent storage of \texttt{comparatree} instances is also important, because they store the parsed submissions.
+We do not then need to store the original source code and parse it again, which saves a lot of time and space.
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.75\textwidth]{img/comparatree-floors.eps}
-  \caption{Organization of files in comparatree.}
+  \caption{Organization of files in \texttt{comparatree}.}
   \label{fig:comparatree-floors}
 \end{figure}
 
-As shown in \autoref{fig:comparatree-floors}, the data in comparatree is organized into three layers in class \verb|module_flat_storage|:
+As shown in \autoref{fig:comparatree-floors}, the data in \texttt{comparatree} is organized into three layers in class \verb|module_flat_storage|:
 \begin{itemize}
-\item Module: A single file is represented by a module, which contains a structure root (global core node), a location root (global loc node), used identifier names, absolute location of the root, and a solution ID.
+\item Module: A single file is represented by a module, which contains a structure root (global core node), a location root (global loc node), used identifier names, the absolute location of the root, and a solution ID.
 \item Solution: A solution corresponds to a single submission, and contains an author ID and a batch ID.
 \item Batch: A batch corresponds to a set of submissions, for example all the submissions for a single assignment collected during one day.
 \end{itemize}
@@ -23,18 +23,18 @@ As shown in \autoref{fig:comparatree-floors}, the data in comparatree is organiz
 \section{Core storage}
 
 The class \verb|core_tree_storage| represents all the structures of the ASTs.
-By a structure we mean a subtree of the AST, which has its own kind (eg. variable declaration or function call) and a list of children (which are also structures).
+By a structure we mean a subtree of the AST, which has its own kind (e.g., variable declaration or function call) and a list of children (which are also structures).
 
 The set of possible kinds of structures is defined by type descriptors.
 A type descriptor defines the kind of a structure root.
-It has an unique number ID, a name, and a list of children.
+It has a unique ID number, a name, and a list of children.
 Each child is either a structure reference, a placeholder for a concrete name, or a placeholder for a literal value.
 The type descriptors are stored in a global registry.
-Each parser can define its own type descriptors, and should create a separate library within comparatree for them as it allows us to have multiple type descriptors with the same IDs for different parsers without conflict.
+Each parser can define its own type descriptors, and should create a separate library within \texttt{comparatree} for them as it allows us to have multiple type descriptors with the same IDs for different parsers without conflict.
 
 All the concrete names used in the structures are stored in modules and are not part of the core storage.
 Each unique structure is stored only once and has a unique ID starting from 0.
-When we build the core storage, all the children of a structure must already be stored; implying that the structures are stored in a bottom-up manner and the parent's ID is always greater than the IDs of its children.
+When we build the core storage, all the children of a structure must already be stored; this implies that the structures are stored in a bottom-up manner and the parent's ID is always greater than the IDs of its children.
 
 \SaveVerb{verb:comparatree-core-deduplication}|{ a = b + c; a = b + a; }|
 \begin{figure}[ht]
@@ -44,12 +44,12 @@ When we build the core storage, all the children of a structure must already be 
   \label{fig:comparatree-core-deduplication}
 \end{figure}
 
-Let's closely look at the deduplication using the example in \autoref{fig:comparatree-core-deduplication}.
+Let's look closely at the deduplication using the example in \autoref{fig:comparatree-core-deduplication}.
 First, we extract away the concrete names.
 The compound statement then goes from \UseVerb{verb:comparatree-core-deduplication} to \verb|{ _0 = _1 + _2; _0 = _1 + _0; }|, where \verb|_0|, \verb|_1|, and \verb|_2| are different placeholders for the concrete names.
-The compound statement has two children; an assignment expression \verb|a13| that receives placeholders \verb|_0, _1, _2|, and an assignment expression \verb|a14| that receives placeholders \verb|_0, _1|.
-The assignment expression \verb|a13| has two children; a variable reference \verb|a9| that receives placeholder \verb|_0|, and a binary operator \verb|a11| that receives placeholders \verb|_1, _2|.
-The binary operator \verb|a11| has two children; both are variable reference \verb|a9| and one of them receives placeholder \verb|_0| and the other receives placeholder \verb|_1|.
+The compound statement has two children: an assignment expression \verb|a13| that receives placeholders \verb|_0, _1, _2|, and an assignment expression \verb|a14| that receives placeholders \verb|_0, _1|.
+The assignment expression \verb|a13| has two children: a variable reference \verb|a9| that receives placeholder \verb|_0|, and a binary operator \verb|a11| that receives placeholders \verb|_1, _2|.
+The binary operator \verb|a11| has two children: both are variable references \verb|a9|, and one of them receives placeholder \verb|_0| while the other receives placeholder \verb|_1|.
 
 For reconstruction of the original code from the example in \autoref{fig:comparatree-core-deduplication} with the concrete names, each structure receives the concrete names for its placeholders.
 The compound statement receives names \verb|a, b, c|.
@@ -64,12 +64,12 @@ In the example in \autoref{fig:comparatree-core-deduplication}, the binary opera
 Each module has a global core node that points to the structure of the whole file, and a list of concrete names that are used in the file.
 The concrete names are stored in the order of their first occurrence in the file, so we can directly use it to reconstruct the original code by sending this list of names to the global core node.
 
-\section {Location storage}
+\section{Location storage}
 
 The class \verb|loc_tree_storage| represents the locations of the structures in the source code.
 It is completely separate from the core storage, so that the same structure can be used in different locations and contexts.
 
-We distinguish those types of locations:
+We distinguish these types of locations:
 \begin{itemize}
 \item Absolute location: A concrete location in a file, represented by a file ID, a line number start and end, a column number start and end, and a character offset start and end.
 \item Size location: A location span, represented by a length in lines, columns, and characters. Written as \verb|<lines, columns, chars>|.
@@ -107,36 +107,10 @@ We apply the relative location along the way.
 
 \section{Statistics}
 
-To prove how storage efficient comparatree is, we compared the original code size with the size of a corresponding comparatree instance.
-The tests were performed with atc (details in \autoref{sec:atc}) on C++ submissions.
-The size depends heavily on the parser and the amount of information we want to capture in the AST, but we currently have only atc.
+To prove how storage efficient \texttt{comparatree} is, we compared the original code size with the size of a corresponding \texttt{comparatree} instance.
+The tests were performed with \texttt{atc} (details in \autoref{sec:atc}) on C++ submissions.
+The size depends heavily on the parser and the amount of information we want to capture in the AST, but we currently have only \texttt{atc}.
 
 Based on the deduplication in both core and location storage, the size also depends on the amount of repetition in the code.
-One student can submit the same (or very similar) code multiple times, what directly leads to more deduplication and smaller size of the comparatree instance.
-The tests were performed on actual student submissions in ReCodEx during a certain period of time, so they reflect the real-world usage of comparatree.
-
-\subsection{Test data}\label{sec:recodex-test-data}
-
-The test data was collected from ReCodEx.
-Submissions were collected during the years 2024 and 2025 for the introductory and advanced C++ courses and an Arduino course.
-All files are encoded in UTF-8.
-
-\begin{table}[ht]
-  \centering
-  \begin{tabular}{lrrr}
-    \toprule
-    Batch name & Files & Kilolines of code & Code size (MB) \\
-    \midrule
-    adv-5aba & 1114 & 322 & 13 \\
-    adv-8456 & 63 & 15 & 0.68 \\
-    adv-8c46 & 772 & 144 & 6.5 \\
-    adv-c0c7 & 417 & 57 & 2.7 \\
-    \bottomrule
-  \end{tabular}
-  \caption{Test data collected from ReCodEx. Batch name contains int for introductory C++ course, adv for advanced course, and ard for Arduino course. TODO aggregate it}
-  \label{tab:test-data}
-\end{table}
-
-\subsection{Size comparison}
-
-Oh no for the small batches the comparatree is larger.
+One student can submit the same (or very similar) code multiple times, which directly leads to more deduplication and smaller size of the \texttt{comparatree} instance.
+The tests were performed on actual student submissions in \texttt{ReCodEx} during a certain period of time, so they reflect the real-world usage of \texttt{comparatree}.
