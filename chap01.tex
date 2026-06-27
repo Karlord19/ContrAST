@@ -162,7 +162,7 @@ CodeBLEU \cite{codebleu20} is an adaptation of BLEU for source code. It also con
 
 CrystalBLEU \cite{crystalbleu23} differs from BLEU in filtering out completely the most common $n$-grams, as they come from the nature of the language rather that from the specific code fragment.
 
-\subsection{Tree edit distance}
+\subsection{Tree edit distance}\label{sec:ted}
 
 \begin{figure}[ht]
     \centering
@@ -176,7 +176,7 @@ CrystalBLEU \cite{crystalbleu23} differs from BLEU in filtering out completely t
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \adjustbox{valign=t}{\includegraphics{img/ted-rename.eps}}
-        \caption{Tree after renaming B to J}
+        \caption{Tree after relabeling B to J}
         \label{fig:ted-rename}
     \end{subfigure}
 

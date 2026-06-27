@@ -42,14 +42,15 @@ If we want to support another language, we need to replace \texttt{atc} and add 
     \label{fig:overall-architecture}
 \end{figure}
 
-The data flow of the system can be seen in \autoref{fig:overall-architecture}.
+The presumed data flow of the system can be seen in \autoref{fig:overall-architecture}.
 As the new files are downloaded in batches, this process is repeated once per day.
 One instance of \texttt{comparatree} is built per batch, and appended to one archive of all the previous batches.
 
 There might exist multiple archive \texttt{comparatree} instances, one per assignment, for example, and the search for similar code fragments is then performed only on the one corresponding to the assignment.
 It is up to the user to decide the organization of files into \texttt{comparatree} instances.
 
-A set of Python scripts is used to automate the whole process, including downloading the files, running \texttt{atc} and \texttt{ContrAST}, and importing the results into \texttt{ReCodEx}.
+A set of Python scripts will be used to automate the whole process, including downloading the files, running \texttt{atc} and \texttt{ContrAST}, and importing the results into \texttt{ReCodEx}.
+The process is more difficult to automate than the solution with \texttt{Comparatrix}, so we are still working on the Python scripts and their configuration.
 
 \texttt{ReCodEx} has fixed interfaces for downloading data and importing reports, so the system needs to fit those requirements.
 The main part is keeping the identifiers of the files (and also submissions and authors) consistent across the whole process.
