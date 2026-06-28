@@ -1,0 +1,251 @@
+\section{Comparison algorithms}
+
+A code fragment in \texttt{comparatree} (we consider only the core storage here) is represented by its root node, and the subtree rooted at that node represents the entire code fragment.
+We use the comparison algorithms to compute the similarity score between each pair of code fragments.
+This gives us the ability to compute all the similarity scores once and later generate multiple reports with different thresholds without the need to recompute anything.
+
+Note that \texttt{comparatree} deduplicates the stored code fragments, giving each unique code fragment a unique identifier.
+If two identical code fragments occur in different places, they will have the same identifier, and we compute the similarity scores for them only once.
+We can also use this property for recursive comparison algorithms, where a score for a larger code fragment can be computed from the scores of its subfragments.
+We can design the comparison algorithms to take advantage of this property and properly reuse the precomputed scores of the subfragments.
+
+Currently, \texttt{ContrAST} implements tree similarity edit distance and CrystalBLEU algorithms for comparing code fragments.
+
+\subsection{Tree similarity edit distance}
+
+Tree similarity edit distance (TSED) is a tree-based algorithm that measures the cost of transforming one labeled tree into another using a set of edit operations.
+The edit operations include insertion, deletion, and relabeling of nodes, and based on the concrete operation and the node label, we can assign different costs to each operation.
+The definition and theoretical background of TSED are described in \autoref{sec:ted}.
+
+We choose TSED as one of the comparison algorithms because it is able to capture the surface similarity \cite{dristi25} and structural alignment \cite{rahman26} of code fragments.
+It did not perform well in the experiments of Ebrahim and Joy \cite{ebrahim26}, as all of the edit operations had unit cost.
+The cost of the edit operations is crucial for the performance of TSED \cite{changedistilling07}, and we need to pay special attention to the cost of the relabeling operation.
+
+\subsubsection{Implementation}
+
+From the range of theoretical algorithms for computing TSED, we choose the simple version of the Zhang-Shasha algorithm \cite{zhang89}.
+We do not use the keyroots optimization that skips some of the subtrees.
+We benefit from the fact that during the comparison of two big code fragments, each pair of their subfragments is also compared.
+We can run the algorithm only on the module roots, having the scores of the subfragments implicitly computed.
+
+Note that whenever a score of a pair of code fragments is needed, we can first check if the score has already been computed and reuse it.
+
+Apart from the database of the computed scores, each comparison is entirely independent of the others, and we can run multiple comparisons in parallel.
+We can store the computed scores in a cache, and copy it to the global database after all comparisons are finished.
+Sharing some scores between the threads might be beneficial, but we need to be careful about the overhead and the analysis of shared subtasks.
+We decided not to share data between the threads and keep the threads completely independent.
+We discuss this in more detail in \autoref{sec:future}.
+
+The cost metric for the edit operations is based on the labels of the nodes.
+We operate only on the core storage of \texttt{comparatree}, so the labels of the nodes are the types of the AST nodes.
+We have no information about the actual content of the code fragments, so we cannot make any decisions based on the literal values or names of the identifiers.
+We provide a simple interface for the cost metric, which allows us to set the cost of each edit operation based on the labels of the nodes.
+We do not distinguish between deletion and insertion cost, as we want the metric to be symmetric.
+
+Note that tree edit distance is also defined on forests, which are sequences of trees.
+It behaves the same as on trees.
+
+The algorithm is implemented in the \texttt{algorithm\_ted\_pre} class.
+The normalization of the computed scores and the enumeration of the tasks for the comparisons is implemented in the \texttt{algorithm\_distance} class, which inherits from the \texttt{algorithm} class.
+
+Given two nodes $node_i$ and $node_j$, we first create their preorder traversals $S_i$ and $S_j$.
+The algorithm then operates on a two-dimensional matrix $D$ of size $(|S_i| + 1) \times (|S_j| + 1)$.
+The value of the matrix $D[i][j]$ represents the cost of transforming a subtree rooted at the $i$-th node of $S_i$ into a subtree rooted at the $j$-th node of $S_j$, or transforming forests starting at the $i$-th node of $S_i$ into forests starting at the $j$-th node of $S_j$.
+
+For a node $n$ from a preorder traversal, the subtree rooted at $n$ is represented by the subsequence of the preorder traversal starting at $n$ and having the same length as the number of nodes in the subtree rooted at $n$.
+If we precompute the sizes of the subtrees, we have all the information we need about the original structure of the trees.
+
+We fill the matrix $D$ in a bottom-up manner, starting from the leaves of the trees and moving towards the roots.
+In this dynamic programming approach, we choose the minimum cost from the possible edit operations, considering the costs of insertion, deletion, and relabeling.
+While insertion and deletion operations are straightforward, the relabeling operation differs based on the current structure of the trees.
+The relabeling operation is applied only when both nodes being compared are roots of their respective subtrees, meaning two trees are being compared and not two forests.
+When the relabeling operation cannot be applied, we consider the cost of transforming the current trees plus the cost of transforming the remaining forests (both values are already computed, because they are smaller subproblems).
+
+\begin{algorithm}
+\caption{Tree edit distance}\label{alg:ted}
+\begin{algorithmic}[1]
+\Require Nodes $node_i$ and $node_j$, distance database $db$, cost metric $cm$
+\Ensure Distance database $db$ updated with the distance between $node_i$ and $node_j$ and the distances between their subtrees
+
+\State $S_i \gets \text{preorder\_sequence}(node_i)$
+\State $S_j \gets \text{preorder\_sequence}(node_j)$
+
+\State $D \gets$ zero matrix of size $(|S_i| + 1) \times (|S_j| + 1)$
+
+\For{$k = |S_i| - 1$ \textbf{down to} $0$}\Comment{Outer DP loops}
+    \State $r_k \gets$ index of rightmost descendant of $S_i[k]$
+    \For{$l = |S_j| - 1$ \textbf{down to} $0$}
+        \State $r_l \gets$ index of rightmost descendant of $S_j[l]$
+
+        \If{$\text{db.has}(S_i[k], S_j[l])$}
+            \State \textbf{continue}\Comment{Distance already computed}
+        \EndIf
+        
+        \State $D[r_k + 1][r_l + 1] \gets 0$\Comment{Initialize forest boundaries}
+        \For{$i = r_k$ \textbf{down to} $k$}
+            \State $D[i][r_l + 1] \gets D[i + 1][r_l + 1] + \text{cm.delete\_cost}(S_i[i])$
+        \EndFor
+        \For{$j = r_l$ \textbf{down to} $l$}
+            \State $D[r_k + 1][j] \gets D[r_k + 1][j + 1] + \text{cm.insert\_cost}(S_j[j])$
+        \EndFor
+        
+        \For{$i = r_k$ \textbf{down to} $k$}\Comment{Inner DP loops}
+            \State $r_i \gets$ index of rightmost descendant of $S_i[i]$
+            \For{$j = r_l$ \textbf{down to} $l$}
+                \State $r_j \gets$ index of rightmost descendant of $S_j[j]$
+                
+                \State $on\_delete \gets D[i + 1][j] + \text{cm.delete\_cost}(S_i[i])$
+                \State $on\_insert \gets D[i][j + 1] + \text{cm.insert\_cost}(S_j[j])$
+                
+                \If{$r_i = r_k$ \textbf{and} $r_j = r_l$}
+                    \State $on\_relabel \gets D[i + 1][j + 1] + \text{cm.relabel\_cost}(S_i[i], S_j[j])$
+                    \State $D[i][j] \gets \min(on\_delete, on\_insert, on\_relabel)$
+                    \State $\text{db.set}(S_i[i], S_j[j], D[i][j])$
+                \Else
+                    \State $on\_jump \gets D[r_i + 1][r_j + 1] + \text{db.get}(S_i[i], S_j[j])$
+                    \State $D[i][j] \gets \min(on\_delete, on\_insert, on\_jump)$
+                \EndIf
+            \EndFor
+        \EndFor
+    \EndFor
+\EndFor
+
+\end{algorithmic}
+\end{algorithm}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    % --- The Perfect Grid Styling ---
+    % text height and text depth force every cell to be EXACTLY identical, preventing any grid misalignment
+    dpcell/.style={rectangle, draw=black, minimum width=2.4cm, minimum height=0.9cm, text height=1.6ex, text depth=0.1ex, align=center, font=\sffamily},
+    % --- Index Cells (Pulled tight to the grid) ---
+    idxrow/.style={minimum width=0.4cm, minimum height=0.9cm, text height=1.6ex, text depth=0.1ex, align=right, font=\bfseries},
+    idxcol/.style={minimum width=2.4cm, minimum height=0.4cm, text height=1.6ex, text depth=0.1ex, align=center, font=\bfseries},
+    empty/.style={minimum width=0.4cm, minimum height=0.4cm},
+    % --- Tree styling ---
+    treenode/.style={circle, draw=black, thick, inner sep=2pt, font=\bfseries}
+]
+
+% ==========================================
+% The Matrix (Just the numbers and data now)
+% ==========================================
+\matrix (M) [matrix of nodes, row sep=-\pgflinewidth, column sep=-\pgflinewidth, nodes in empty cells]
+{
+    |[empty]| & |[idxcol]| 0 & |[idxcol]| 1 & |[idxcol]| 2 & |[idxcol]| 3 & |[idxcol]| 4 \\
+    |[idxrow]| 0 & |[dpcell]| 3d, 3i, \textbf{1r} & |[dpcell]| \textbf{2d}, 3i, 4j & |[dpcell]| 3d, 3i, \textbf{2r} & |[dpcell]| \textbf{2d}, 4i, 3r & |[dpcell]| \textbf{3d} \\
+    |[idxrow]| 1 & |[dpcell]| 4d, \textbf{2i}, 4j & |[dpcell]| 3d, 3i, \textbf{1j} & |[dpcell]| \textbf{2d}, \textbf{2i}, 3j & |[dpcell]| \textbf{1d}, 3i, 2j & |[dpcell]| \textbf{2d} \\
+    |[idxrow]| 2 & |[dpcell]| 5d, \textbf{3i}, 4r & |[dpcell]| 4d, \textbf{2i}, 3j & |[dpcell]| 3d, \textbf{1i}, 2r & |[dpcell]| 2d, 2i, \textbf{0r} & |[dpcell]| \textbf{1d} \\
+    |[idxrow]| 3 & |[dpcell]| \textbf{4i} & |[dpcell]| \textbf{3i} & |[dpcell]| \textbf{2i} & |[dpcell]| \textbf{1i} & |[dpcell]| \textbf{0} \\
+};
+
+% ==========================================
+% Draw Column Tree (Tree 2) over the headers
+% ==========================================
+% Positioned dynamically above the matrix nodes (M-1-X)
+\node[treenode] (C0) at ([yshift=2cm,xshift=-0.07cm]M-1-2.north) {A};
+\node[treenode] (C1) at ([yshift=1.2cm,xshift=-0.07cm]M-1-3.north) {B};
+\node[treenode] (C2) at ([yshift=1.2cm,xshift=-0.07cm]M-1-4.north) {X};
+\node[treenode] (C3) at ([yshift=0.4cm,xshift=-0.07cm]M-1-5.north) {C};
+\node[font=\Large] (CE) at ([yshift=0.4cm,xshift=-0.07cm]M-1-6.north) {$\emptyset$};
+
+% Arrows
+\draw[-Latex, thick] (C0) -- (C1);
+\draw[-Latex, thick] (C0) -- (C2);
+\draw[-Latex, thick] (C2) -- (C3);
+
+% ==========================================
+% Draw Row Tree (Tree 1) left of the headers
+% ==========================================
+% Positioned dynamically to the left of the row indices (M-X-1)
+\node[treenode] (R0) at ([xshift=-1.2cm]M-2-1.west) {A};
+\node[treenode] (R1) at ([xshift=-0.4cm]M-3-1.west) {B};
+\node[treenode] (R2) at ([xshift=-0.4cm]M-4-1.west) {C};
+\node[font=\Large] (RE) at ([xshift=-0.4cm]M-5-1.west) {$\emptyset$};
+
+% Arrows
+\draw[-Latex, thick] (R0) -- (R1);
+\draw[-Latex, thick] (R0) -- (R2);
+
+\end{tikzpicture}
+\caption{Matrix $D$ at $k=0, l=0$ following \autoref{alg:ted}. Format is delete, insert, relabel/jump with the minimum chosen value in bold.}
+\label{fig:scratchpad}
+\end{figure}
+
+Now that the ideas of the algorithm are clear, we show the implementation in \autoref{alg:ted} and the matrix $D$ in \autoref{fig:scratchpad}.
+We describe the algorithm for the situation in \autoref{fig:scratchpad}, where we suppose we already computed the distances for all the subtrees and only the last iteration of the outer loops remains.
+We assume a unit cost for each operation.
+The left tree represents the preorder traversal $S_i$ and the top tree represents the preorder traversal $S_j$.
+
+We first fill the last row and column, starting from $0$ in the bottom right corner, then we fill the last column with the costs of deleting the nodes of $S_i$ and the last row with the costs of inserting the nodes of $S_j$.
+Then we fill the rest of the matrix by starting from the bottom row and moving up, and for each row, we start from the rightmost column and move left.
+
+In each cell, we compute the costs of the three possible operations and choose the minimum.
+The delete operation looks at the cell below and adds the cost of deleting the current node of $S_i$.
+The insert operation looks at the cell to the right and adds the cost of inserting the current node of $S_j$.
+We then check if the current nodes of $S_i$ and $S_j$ are roots of their respective subtrees.
+If they are, we look at the diagonal cell to the bottom right and add the cost of relabeling the current nodes; we also store the computed distance in the database.
+If they are not, we sum the cost of transforming the current subtrees (which is already computed and stored in the database) and the cost of transforming the remaining forests (which is in $D$ after the end of the current subtrees).
+
+Let us now look closely at the cell $D[2][2]$.
+Both nodes are roots of their respective subtrees, so we can apply the relabeling operation.
+The cost of relabeling is $1$ for different labels, so we add $1$ to the cost of transforming the remaining forests, which is $1$ from $D[3][3]$.
+That gives us a total cost of $2$ for the relabeling operation.
+
+If we look at the cell $D[1][0]$, we see that the current node of $S_i$ (left tree) is not a root of its subtree, so we cannot apply the relabeling operation and we need to use the jump operation.
+The cost of transforming the current subtrees (which is the node $B$ from the left tree and the whole right tree) is already computed and stored in the database, and it is $3$.
+The cost of transforming the remaining forests is $1$ from $D[2][4]$ (the index after the end of the current left subtree is $2$ and the index after the end of the current top subtree is $4$).
+That gives us a total cost of $4$ for the jump operation.
+
+The final distance between the two trees is stored in the top left cell $D[0][0]$, and it is $1$.
+We can track back the operations that led to this distance by looking at the minimum cost operation in each cell.
+Cell $D[0][0]$ has the minimum cost from the relabeling operation, so we relabel the root nodes of both trees (node $A$ from the left tree to the node $A$ from the right tree).
+We then move to the diagonal cell $D[1][1]$, which has the minimum cost from the jump operation, so we transform the current subtrees (node $B$ from the left tree to the node $B$ from the right tree).
+The jump operation tells us to go to the cell $D[2][2]$, which has the minimum cost from the insertion operation, so we insert the node $X$ from the top tree.
+We move to the cell $D[2][3]$, which has the minimum cost from the relabeling operation, so we relabel the node $C$ from the left tree to the node $C$ from the right tree.
+Finally, we move to the cell $D[3][4]$, which corresponds to the empty trees, and we are done.
+We can see that the edit script contained only inserting the node $X$, which results in a total distance of $1$ between the two trees.
+
+\subsection{CrystalBLEU}
+
+CrystalBLEU \cite{crystalbleu23} is a token-based algorithm that measures the similarity of two code fragments based on the number of their shared $n$-grams.
+An $n$-gram is a continuous sequence of $n$ tokens, and the algorithm uses all $n$-grams up to $n=4$.
+It completely ignores the most common $n$-grams, which are coming from the nature of the programming language and boilerplate code; this differs from the original BLEU algorithm.
+
+It is asymmetrical and computes the similarity score of a candidate with respect to a reference.
+The need for symmetry is a common requirement and is solved, for example, by computing the score in both directions and taking the average \cite{sbleu10}.
+We use a different approach and directly change the asymmetrical formulas to symmetrical ones, though there remains significant room for experimentation.
+
+We choose CrystalBLEU as one of the comparison algorithms because it was shown to be effective in the plagiarism experiments of Ebrahim and Joy \cite{ebrahim26} and is both straightforward and reasonably fast.
+
+\subsubsection{Implementation}
+
+The algorithm is implemented in the \texttt{algorithm\_bleu} class, and the crystallization process is implemented in the \texttt{algorithm\_crystal\_bleu} class, which inherits from the \texttt{algorithm\_bleu} class.
+
+We create a token sequence of node labels for each code fragment from the preorder traversal of its AST.
+Then we collect all $n$-grams from the token sequence and count their occurrences.
+Each $n$-gram is represented by its hash value.
+We store the frequencies of the $n$-grams in an ordered vector of pairs of hash values and their frequencies.
+
+From the frequencies counted for module roots, we can determine the most common ones and proclaim them the crystals of the codebase.
+The crystals are stored in a set of hash values.
+
+We apply the crystallization process to the vectors of $n$-gram frequencies, removing the crystals from the vectors.
+We store the crystallized vectors in memory and use them for the comparisons of the code fragments.
+
+To count the number of shared $n$-grams between two vectors, we use a two-pointer technique, where we iterate through both vectors simultaneously, advancing the pointer of the vector with the smaller hash value.
+When we find a matching hash value, we add the minimum of the two frequencies to the count of shared $n$-grams.
+
+We then compute the clipped precision for $n$-grams of order $n$ as
+$$p_n = \dfrac{2\cdot |\text{shared } n\text{-grams}|}{|\text{total } n\text{-grams in candidate and reference}|}.$$
+The original BLEU algorithm uses
+$$p_n = \dfrac{|\text{shared } n\text{-grams}|}{|\text{total } n\text{-grams in candidate}|}.$$
+
+From the clipped precisions, we compute the weighted geometric mean as
+$$mean = \exp\left(\sum_{n=1}^{4} w_n \cdot \ln(p_n)\right),$$
+where $w_n$ is the weight for $n$-grams of order $n$.
+We use uniform weights $w_n = 0.25$ for all $n$-grams, but we can experiment with different weights to emphasize certain $n$-gram orders.
+
+The original BLEU algorithm finally multiplies the score with a brevity penalty, which penalizes candidates that are significantly shorter than the reference.
+The brevity penalty is $1$ if the candidate is longer than the reference, and $$\exp(1 - \frac{|\text{reference}|}{|\text{candidate}|})$$ otherwise.
+We do not use the brevity penalty, as our modification of the clipped precision already penalizes size differences between the code fragments.
