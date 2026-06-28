@@ -1,0 +1,30 @@
+@startuml contrast-flow
+database "comparatree\nnew ASTs" as newcomparatree
+database "comparatree\nold ASTs" as oldcomparatree
+component "storage" as xstorage
+oldcomparatree -d-> xstorage: 1. old\nASTs
+newcomparatree -d-> xstorage: 2. new\nASTs
+xstorage -u-> oldcomparatree: 3. add\nnew AST
+oldcomparatree -[hidden]> newcomparatree
+
+component "abstraction" as abstraction
+xstorage --> abstraction: 4. core\nstorage
+
+component "abstraction\nstorage" as absstorage
+abstraction -u-> absstorage: 5. build
+xstorage -[hidden]> absstorage
+
+component "algorithm" as algorithm
+absstorage --> algorithm: 6. ASTs
+algorithm -r-> absstorage: 7. add\nsimilarity\nscores
+
+component "report" as report
+algorithm --> report: 8. filter\nsimilarity\nscores
+xstorage --> report: 9. original\nlocations
+
+component "printer" as printer
+report -> printer: 10. candidates
+
+file "report\nfile" as reportfile
+printer -> reportfile: 11. print
+@enduml
