@@ -223,3 +223,33 @@ The jump operation tells us to go to the cell $D[2][2]$, which has the minimum c
 We move to the cell $D[2][3]$, which has the minimum cost from the relabeling operation, so we relabel the node $C$ from the left tree to the node $C$ from the right tree.
 Finally, we move to the cell $D[3][4]$, which corresponds to the empty trees, and we are done.
 We can see that the edit script contained only inserting the node $X$, what really makes a total distance of $1$ between the two trees.
+
+\subsection{CrystalBLEU}
+
+CrystalBLEU \cite{crystalbleu23} is a token-based algorithm that measures the similarity of two code fragments based on the number of their shared $n$-grams.
+An $n$-gram is a continuous sequence of $n$ tokens, and the algorithm uses all $n$-grams up to $n=4$.
+It completely ignores the most common $n$-grams, which are comming from the nature of the programming language and boilerplate code; differing from the original BLEU algorithm.
+
+It is asymmetrical and computes the similarity score of a candidate with respect to a reference.
+The need for symmetry is a common requirement and is solved for example in the BLEU algorithm by computing the score in both directions and taking the average \cite{sbleu10}.
+We use a different approach and directly change the asymmetrical formulas to symmetrical ones. But there is still a lot of space for experiments.
+
+We choose CrystalBLEU as one of the comparison algorithms because it was shown to be effective in the plagiarism experiments of Ebrahim and Joy \cite{ebrahim26} and is straightforward and reasonably fast.
+
+\subsubsection{Implementation}
+
+We create a token sequence of node labels for each code fragment from the preorder traversal of its AST.
+Then we collect all $n$-grams from the token sequence and count their occurrences.
+Each $n$-gram is represented by its hash value.
+We store the frequencies of the $n$-grams in an ordered vector of pairs of hash values and their frequencies.
+
+From the frequencies counted for module roots, we can determine the most common ones and proclaim them as the crystals of the codebase.
+The crystals are stored in a set of hash values.
+
+We apply the crystalization process to the vectors of $n$-gram frequencies, removing the crystals from the vectors.
+We store the crystalized vectors in memory and use them for the comparisons of the code fragments.
+
+To count the number of shared $n$-grams between two vectors, we use a two-pointer technique, where we iterate through both vectors simultaneously, advancing the pointer of the vector with the smaller hash value.
+When we find a matching hash value, we add the minimum of the two frequencies to the count of shared $n$-grams.
+
+
