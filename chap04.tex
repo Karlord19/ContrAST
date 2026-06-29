@@ -49,15 +49,15 @@ The data was anonymized and is not publicly available.
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=0.5\textwidth]{img/atc-node-kinds.eps}
-  \caption{Occurrences of different AST node kinds. The node kinds are on the x-axis, on the y-axis is the percentage of files where they occur at least once. The line separates the node kinds that we capture in \texttt{comparatree} from those that we do not capture. From 150 collected node kinds, we capture about 80.}
-  \label{fig:atc-node-kinds}
+  \includegraphics[width=0.5\textwidth]{img/atc-node-labels.eps}
+  \caption{Occurrences of different AST node labels. The node labels are on the x-axis, on the y-axis is the percentage of files where they occur at least once. The line separates the node labels that we capture in \texttt{comparatree} from those that we do not capture. From 150 collected node labels, we capture about 80.}
+  \label{fig:atc-node-labels}
 \end{figure}
 
 The Clang AST contains a lot of different node types, and we are not able to capture all of them.
-\autoref{fig:atc-node-kinds} shows the occurrences of different node kinds in the dataset.
-We set 9 percent as a threshold for capturing the node kinds in \texttt{comparatree}, which means that we capture all node kinds that occur in at least 9 percent of the files.
-This was set as a required minimum, but we also captured about 20 node kinds that correspond to important superclasses, as we can still collect the most significant information about the node through a fallback.
+\autoref{fig:atc-node-labels} shows the occurrences of different node labels in the dataset.
+We set 9 percent as a threshold for capturing the node labels in \texttt{comparatree}, which means that we capture all node labels that occur in at least 9 percent of the files.
+This was set as a required minimum, but we also captured about 20 node labels that correspond to important superclasses, as we can still collect the most significant information about the node through a fallback.
 
 We then counted the fallbacks, as it measures the quality of the resulting ASTs.
 From 27M processed Clang AST nodes, we had 127K fallbacks, which is about 0.5 percent of the nodes.

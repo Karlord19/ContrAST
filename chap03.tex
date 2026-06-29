@@ -23,10 +23,10 @@ As shown in \autoref{fig:comparatree-floors}, the data in \texttt{comparatree} i
 \section{Core storage}
 
 The class \verb|core_tree_storage| represents all the structures of the ASTs.
-By a structure we mean a subtree of the AST, which has its own kind (e.g., variable declaration or function call) and a list of children (which are also structures).
+By a structure we mean a subtree of the AST, which has its own label (e.g., variable declaration or function call) and a list of children (which are also structures).
 
-The set of possible kinds of structures is defined by type descriptors.
-A type descriptor defines the kind of a structure root.
+The set of possible labels of structures is defined by type descriptors.
+A type descriptor defines the label of a structure root.
 It has a unique ID number, a name, and a list of children.
 Each child is either a structure reference, a placeholder for a concrete name, or a placeholder for a literal value.
 The type descriptors are stored in a global registry.

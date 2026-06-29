@@ -1,0 +1,41 @@
+\section{Build system}
+
+\subsection{Registry}
+
+We use a \texttt{registry} to manage the available switchable components.
+The \texttt{registry} is a singleton class, with one instance per base class.
+It stores the available derived classes and their corresponding factory functions, allowing for easy instantiation of the desired components at runtime from the name of the derived class.
+
+Along with each base class, we define domain \texttt{registry} and domain \texttt{registrar} classes corresponding to the base class and its constructor parameters.
+The domain \texttt{registry} should be used to access the corresponding derived classes, while the domain \texttt{registrar} is responsible for managing the registration process.
+
+Each derived class is responsible for registering itself with the \texttt{registry}.
+For the registration to work, each derived class should define a static instance of the corresponding domain \texttt{registrar} class.
+Because we wanted the derived classes to live only in source files in a separate library, we had to ensure that the static instances of the domain \texttt{registrar} classes are not optimized away by the linker.
+We achieve this by creating an object library from the source files containing the derived classes and linking it to the executables.
+
+\subsection{CMake setup}
+
+We follow the standard setup of a CMake project.
+All headers are located in the \texttt{include/contrast} directory, while the source files are located in the \texttt{src} directory.
+
+The source files are organized into subdirectories based on the library they belong to.
+\begin{itemize}
+\item \texttt{contrast\_core} is the main library that contains the core functionality of the tool and implementations of the base classes.
+\item \texttt{contrast\_common\_derived} is an object library that contains implementations of the derived classes, such as concrete comparison algorithms and printers.
+\item \texttt{contrast\_clangtype} contains implementations of abstractions for Clang AST nodes.
+\end{itemize}
+
+The \texttt{apps} directory contains the source files for the executables.
+We provide a set of main files for different use cases, corresponding to smaller parts of the tool, such as finding crystals (details in \autoref{sec:crystalbleu}), computing similarity scores, and generating reports.
+
+The only part of the project that depends on Clang AST nodes is the \texttt{contrast\_clangtype} library.
+The type descriptors for Clang AST nodes are defined in the \texttt{clangast} library inside the \texttt{comparatree} project, which is linked to the \texttt{contrast\_clangtype} library.
+
+If we want \texttt{ContrAST} to work with a different set of original type descriptors, we create a new library with the corresponding abstractions (or stick with \texttt{identity} provided by \texttt{contrast\_common\_derived}).
+We then create new CMake targets for the apps, linking them to the new library instead of \texttt{contrast\_clangtype}.
+It is important to create the new targets instead of linking the library to the existing ones, as we need to keep the type descriptors from different languages separate to avoid conflicts.
+
+The implementations of algorithms and printers from \texttt{contrast\_common\_derived} do not depend on the AST labels, so they can be used with any AST representation.
+Provided that we include the abstraction type descriptors, we can also create implementations for algorithms and printers that depend on the concrete AST labels.
+This might be useful for algorithms that specifically target certain AST nodes, such as function declarations.
