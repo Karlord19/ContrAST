@@ -1,6 +1,7 @@
 \chapter{\texttt{comparatree}}\label{sec:comparatree}
 
 \texttt{comparatree} \cite{comparatree} is a C++ library aiming to store abstract syntax trees (ASTs) of source code very efficiently with custom metadata.
+Although \texttt{comparatree} is the name of the whole library, we use the name \texttt{comparatree} to refer to a single instance of its \texttt{tree\_storage} class in other chapters.
 
 We need \texttt{comparatree} to be adequately storage efficient, as we want to perform various analyses on large datasets in memory.
 The permanent storage of \texttt{comparatree} instances is also important, because they store the parsed submissions.
@@ -27,7 +28,7 @@ By a structure we mean a subtree of the AST, which has its own label (e.g., vari
 
 The set of possible labels of structures is defined by type descriptors.
 A type descriptor defines the label of a structure root.
-It has a unique ID number, a name, and a list of children.
+It has a unique ID number, a name (used only for printing), and a list of children.
 Each child is either a structure reference, a placeholder for a concrete name, or a placeholder for a literal value.
 The type descriptors are stored in a global registry.
 Each parser can define its own type descriptors, and should create a separate library within \texttt{comparatree} for them as it allows us to have multiple type descriptors with the same IDs for different parsers without conflict.
@@ -104,6 +105,19 @@ We can reconstruct the absolute location of any structure in the core storage.
 We start with the absolute location of the module from the global core node and the global loc node.
 The sequence of children of a location node corresponds to the sequence of children of the core node, so we can easily descend in both the location storage and the core storage at the same time.
 We apply the relative location along the way.
+
+\section{Incremental saving}
+
+The storage can be saved to a directory and loaded back.
+All the data is stored in binary files in the form of serialized vectors (implemented in the \texttt{vectorio} header).
+The supported types can be easily extended by adding a corresponding struct, and the type of the data is stored as the file extension.
+
+When we append new modules to the storage, the new content is merged with the existing content and the unique structures and location nodes are assigned new IDs (the existing IDs are preserved).
+If we want to save the new content, we do not want to rewrite the entire storage, but only save the new content.
+
+It is easy to accomplish this by caching the sizes of the existing content in the files.
+Each file is only a serialized vector and we expect the old content not to change and the new content to be appended at the end.
+With the caching in place, we can just append the new content to the files and update the cached sizes.
 
 \section{Statistics}
 

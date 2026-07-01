@@ -1,0 +1,140 @@
+\section{Components}\label{sec:components}
+
+We describe all the main components of \texttt{ContrAST} and specify which components are easy to extend or replace.
+The details about autoregistration and source code structure can be found in \autoref{sec:buildsystem}.
+
+\subsection{\texttt{storage}}
+
+The \texttt{storage} class is responsible for storing the \texttt{comparatree} instance and providing access to it.
+It can be saved to and loaded from a directory, which grants us easy archive management and the ability to share the \texttt{comparatree} instances between different runs of \texttt{ContrAST}.
+
+It accepts one \texttt{comparatree} instance as the archive and multiple new instances.
+Note that \texttt{comparatree} assigns indices to the nodes in the order they are added, starting from 0, as mentioned in \autoref{sec:comparatree}.
+The archive is loaded first, so that its content is never changed.
+The new instances are merged into the archive afterwards, and their original indices are not preserved; the deduplicated nodes point to the corresponding nodes in the archive, and the new nodes are assigned new higher indices.
+
+The \texttt{storage} class provides access to the \texttt{comparatree} instance and its related classes.
+This includes the core storage, the location storage, the modules metadata, \texttt{descriptor\_set}, and \texttt{modules\_index}.
+The \texttt{descriptor\_set} is used to access all the linked type descriptors for the AST nodes, while the \texttt{modules\_index} is used to efficiently access the modules metadata.
+
+\subsection{\texttt{abstraction\_storage}}
+
+The \texttt{abstraction\_storage} class stores the abstracted core storage of a referenced \texttt{storage} instance.
+It is used to store the abstracted ASTs of the original \texttt{comparatree} instances.
+It can be saved to and loaded from a directory.
+
+Its purpose is to provide a shorter representation of the ASTs, which is more suitable for comparison.
+We often want to entirely forget about certain extreme details of the ASTs and focus on the overall structure of the code instead.
+
+When updating a parser based on a new version of the language, we may need to change some of the type descriptors for the AST nodes.
+However, we cannot change the original ones, as the already existing \texttt{comparatree} instances depend on them.
+We need to create new type descriptors, and we want to assign them the same semantic meaning as the original ones.
+As each type descriptor has a unique label, the proposed solution is to group the original and new type descriptors into a single abstraction.
+The abstraction type descriptor only needs to be able to accept both descriptors, for example by having a variable number of children.
+
+The \texttt{abstraction\_storage} also maintains links between the original and abstracted core storage nodes, making it easy to find the corresponding nodes in the alternative storage.
+Each node in the original storage either has a link to the corresponding node in the abstracted storage, or it is abstracted away and has no corresponding node.
+Conversely, each node in the abstracted storage has a set of links to the corresponding nodes in the original storage, as multiple nodes can be condensed into a single abstraction.
+
+As mentioned regarding the \texttt{storage}, the \texttt{abstraction\_storage} should also preserve the indices of the nodes coming from the archive, while the new nodes are assigned new higher indices.
+We need to ensure that all the data computed and stored in the archive is preserved, while assuming that we compute the data for the new nodes from scratch.
+
+\subsubsection{\texttt{service}}
+
+The \texttt{abstraction\_storage} has a set of services that provide additional data about the storage.
+For easy access to the services during the entire process, the storage maintains maximally one instance of each service type.
+Other components ask the storage for a service identified by its class, and the storage either returns the existing instance or creates a new one if it does not exist yet (and attempts to load its contents from the save directory).
+The services are automatically saved alongside the \texttt{abstraction\_storage}.
+
+We provide a base class for the services that can be used to implement new services.
+As the services are identified by their class, we do not need to register them anywhere, and the \texttt{abstraction\_storage} does not need to know about the derived classes.
+
+Their primary purpose is to save the results of computations that are expensive to run and can be reused later.
+Each algorithm can create its own service to store its results; the next time it runs, it can load the results from the service instead of recomputing them.
+As the only expected user of the service is the algorithm itself, and there should be only one algorithm configuration for the storage, we do not have to worry about conflicts from using the same service for different purposes.
+
+\subsection{\texttt{abstraction}}
+
+The \texttt{abstraction} class is a base class for all abstractions and is a switchable component.
+It is used to create the \texttt{abstraction\_storage} from the original \texttt{storage} instance.
+
+We provide an \texttt{abstractor} helper class for simple abstractions.
+It supports mapping the original type descriptors to the abstraction type descriptors, identifying and preserving only the child nodes.
+If a node does not have a mapping for its label, it is virtually represented by its children.
+If a node has a mapping for its label, it collects its children and creates a new node with the corresponding abstraction type descriptor.
+
+We can easily create new abstractions with the use of the \texttt{abstractor} by only defining the mapping of the original type descriptors to the abstraction type descriptors.
+
+In \texttt{contrast\_common\_derived}, we provide an abstraction called \texttt{identity}, which does not change the original ASTs at all.
+
+\subsection{\texttt{algorithm}}
+
+The \texttt{algorithm} class is a base class for all comparison algorithms and is a switchable component.
+It computes the similarity scores between the nodes of an \texttt{abstraction\_storage} instance and stores the results.
+It then creates a \texttt{report} containing the pairs of nodes with similarity scores above a given threshold.
+
+It is important to save the results of the computations, as they can be expensive to compute and can be reused later.
+The results are stored in a service of the \texttt{abstraction\_storage} instance, which is automatically saved with the storage.
+Upon loading the storage, the results from the service can be used instead of recomputing them.
+This way, the whole process of \texttt{ContrAST} can be split into multiple runs: the first one for computing the results and saving them, and multiple subsequent runs for creating different reports from those same results without the need for heavy computations.
+
+As the results depend on the IDs of the nodes in the \texttt{abstraction\_storage}, we need to ensure that the IDs are preserved in the storages.
+Therefore, the \texttt{storage} and \texttt{abstraction\_storage} need to preserve the IDs of the nodes coming from the archive so that the results computed for the archive remain valid even after adding new modules to the storage.
+
+As each algorithm can have its own way of computing and storing the results, we need the algorithm to also create a \texttt{report} with the pairs of nodes with similarity scores above a given threshold.
+The stored results do not have to simply be a single similarity score for each pair of nodes, but can be more complex data from which the similarity score can be computed based on other evaluation parameters.
+
+In \texttt{contrast\_common\_derived}, we provide these algorithms:
+\begin{itemize}
+\item \texttt{noop} does nothing.
+\item \texttt{dump} creates a location storage for the \texttt{abstraction\_storage} and pretty-prints the abstracted modules.
+\item \texttt{tedpre} computes the tree edit distance (\texttt{pre} stands for prefetching all the data needed for the computation; details in \autoref{sec:tsed}).
+\item \texttt{bleu} computes the BLEU score.
+\item \texttt{crystalbleu} creates a crystal service with the found crystals upon request, and computes the CrystalBLEU score (details in \autoref{sec:crystalbleu}).
+\end{itemize}
+
+\subsubsection{\texttt{cost\_metric}}
+
+The tree edit distance algorithm needs a cost metric to compute the cost of the edit operations (details in \autoref{sec:tsed}).
+
+The \texttt{cost\_metric} class is a base class for all cost metrics and is a switchable component.
+It returns the cost of the delete and relabel operations (the insert operation is considered the same as the delete operation) based on the labels of the nodes.
+
+The \texttt{contrast\_common\_derived} library provides simple and table-based cost metrics.
+The simple cost metric corresponds to the default configuration, which assigns a cost of 1 to all operations. The relabel operation has a cost of 0 if the labels are identical.
+The table-based cost metric allows us to define the costs of the relabel operations in a table, and the costs of the delete operations in a vector.
+Each label has its own index in the table and vector, which is used to access the corresponding costs.
+
+\subsubsection{Finding original locations}
+
+The algorithms operate on the core storage in the \texttt{abstraction\_storage} instance and are able to list similarity scores between the nodes in that storage.
+However, we need to find the corresponding locations of the original nodes in the \texttt{storage} instance so that we can create a report with the original locations of the code fragments.
+Note that due to the deduplication in \texttt{comparatree}, we do not have a direct link between nodes in the core storage and their absolute locations; we need to descend from the module roots down to the nodes to find their locations.
+
+We first build an author service for the \texttt{abstraction\_storage} instance, which stores all the modules and their corresponding authors where each node appears.
+
+We then collect all the pairs of nodes with similarity scores above a given threshold and add the modules where the nodes appeared.
+We only collect pairs whose authors are different, and only for modules that passed the filtering criteria (for example, we can filter out old solutions).
+
+We mark all the core storage nodes that require original locations.
+We start from the nodes in the reported pairs and recursively mark all their parent nodes up to the root node.
+
+For each marked node, we find all the locations of its occurrences in the original \texttt{storage} instance.
+We start from the module roots and recursively traverse the children of the marked nodes, collecting the locations of the occurrences.
+
+Finally, we create the report with the pairs, their similarity scores, and their original locations.
+
+\subsection{\texttt{report}}
+
+The \texttt{report} class stores pairs of nodes alongside their similarity scores.
+Its purpose is to cleanly separate the algorithms from the printers.
+
+\subsection{\texttt{printer}}
+
+The \texttt{printer} class is a base class for all printers and is a switchable component.
+It takes a \texttt{report} and prints it in a specific format.
+
+The \texttt{contrast\_common\_derived} library provides a \texttt{dump} and a \texttt{json} printer.
+The \texttt{dump} printer prints the report in a human-readable format.
+The \texttt{json} printer creates a JSON file that can be imported into \texttt{ReCodEx}.
+It uses the \texttt{nlohmann/json} library \cite{json} to create the JSON file.

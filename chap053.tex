@@ -1,4 +1,4 @@
-\section{Build system}
+\section{Build system}\label{sec:buildsystem}
 
 \subsection{Registry}
 
@@ -36,6 +36,6 @@ If we want \texttt{ContrAST} to work with a different set of original type descr
 We then create new CMake targets for the apps, linking them to the new library instead of \texttt{contrast\_clangtype}.
 It is important to create the new targets instead of linking the library to the existing ones, as we need to keep the type descriptors from different languages separate to avoid conflicts.
 
-The implementations of algorithms and printers from \texttt{contrast\_common\_derived} do not depend on the AST labels, so they can be used with any AST representation.
+The algorithms and printers from \texttt{contrast\_common\_derived} do not depend on the AST labels, so they can be used with any AST representation.
 Provided that we include the abstraction type descriptors, we can also create implementations for algorithms and printers that depend on the concrete AST labels.
 This might be useful for algorithms that specifically target certain AST nodes, such as function declarations.

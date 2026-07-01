@@ -11,7 +11,7 @@ We can design the comparison algorithms to take advantage of this property and p
 
 Currently, \texttt{ContrAST} implements tree similarity edit distance and CrystalBLEU algorithms for comparing code fragments.
 
-\subsection{Tree similarity edit distance}
+\subsection{Tree similarity edit distance}\label{sec:tsed}
 
 Tree similarity edit distance (TSED) is a tree-based algorithm that measures the cost of transforming one labeled tree into another using a set of edit operations.
 The edit operations include insertion, deletion, and relabeling of nodes, and based on the concrete operation and the node label, we can assign different costs to each operation.
