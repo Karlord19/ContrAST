@@ -30,7 +30,7 @@ We can run the algorithm only on the module roots, having the scores of the subf
 
 Note that whenever a score of a pair of code fragments is needed, we can first check if the score has already been computed and reuse it.
 
-Apart from the database of the computed scores, each comparison is entirely independent of the others, and we can run multiple comparisons in parallel.
+Apart from the database of the computed scores, each comparison is entirely independent of the others, and we can run multiple comparisons in parallel (we use OpenMP \cite{openmp} for parallelization).
 We can store the computed scores in a cache, and copy it to the global database after all comparisons are finished.
 Sharing some scores between the threads might be beneficial, but we need to be careful about the overhead and the analysis of shared subtasks.
 We decided not to share data between the threads and keep the threads completely independent.
@@ -232,6 +232,8 @@ The crystals are stored in a set of hash values.
 
 We apply the crystallization process to the vectors of $n$-gram frequencies, removing the crystals from the vectors.
 We store the crystallized vectors in memory and use them for the comparisons of the code fragments.
+
+The comparisons are independent of each other, and we can run multiple comparisons in parallel (we use OpenMP \cite{openmp} for parallelization).
 
 To count the number of shared $n$-grams between two vectors, we use a two-pointer technique, where we iterate through both vectors simultaneously, advancing the pointer of the vector with the smaller hash value.
 When we find a matching hash value, we add the minimum of the two frequencies to the count of shared $n$-grams.
