@@ -251,3 +251,14 @@ We use uniform weights $w_n = 0.25$ for all $n$-grams, but we can experiment wit
 The original BLEU algorithm finally multiplies the score with a brevity penalty, which penalizes candidates that are significantly shorter than the reference.
 The brevity penalty is $1$ if the candidate is longer than the reference, and $$\exp(1 - \frac{|\text{reference}|}{|\text{candidate}|})$$ otherwise.
 We do not use the brevity penalty, as our modification of the clipped precision already penalizes size differences between the code fragments.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{img/ngrams-int.eps}
+\caption{Occurrences of different $n$-grams. We choose the cutoff for the crystals and compare code fragments without them, using only the interesting $n$-grams on the right side of the line.}
+\label{fig:ngrams-int}
+\end{figure}
+
+We provide a simple visualization tool for $n$-grams, as shown in \autoref{fig:ngrams-int}, displaying their occurrences across the dataset.
+The vertical cutoff line separates the most common $n$-grams (the crystals) from the remaining $n$-grams (the interesting ones).
+This visualization directly helps the user pick the right number of crystals for a given codebase, making it easy to find a good balance between filtering out boilerplate code and keeping enough $n$-grams for accurate comparisons.

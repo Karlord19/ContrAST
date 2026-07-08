@@ -121,10 +121,124 @@ With the caching in place, we can just append the new content to the files and u
 
 \section{Statistics}
 
-To prove how storage efficient \texttt{comparatree} is, we compared the original code size with the size of a corresponding \texttt{comparatree} instance.
-The tests were performed with \texttt{atc} (details in \autoref{sec:atc}) on C++ submissions (the data was anonymized and is not publicly available).
-The size depends heavily on the parser and the amount of information we want to capture in the AST, but we currently have only \texttt{atc}.
+To show how storage efficient \texttt{comparatree} is, we compared the original code size with the size of the corresponding \texttt{comparatree} instance.
+We ran several tests to see how deduplication affects the size of the storage.
 
-Based on the deduplication in both core and location storage, the size also depends on the amount of repetition in the code.
-One student can submit the same (or very similar) code multiple times, which directly leads to more deduplication and smaller size of the \texttt{comparatree} instance.
-The tests were performed on actual student submissions in \texttt{ReCodEx} during a certain period of time, so they reflect the real-world usage of \texttt{comparatree}.
+The test files were collected from \texttt{ReCodEx} covering the years 2018--2025.
+The dataset includes student submissions from three courses at the Faculty of Mathematics and Physics, Charles University:
+Programming in C++ (\texttt{int}), Advanced Programming in C++ (\texttt{adv}), and Computer Systems (\texttt{ard}).
+The data was completely anonymized and is not publicly available.
+We split the results by course, as the code characteristics and number of submissions vary a lot between courses.
+
+The tests were run using \texttt{atc} (details in \autoref{sec:atc}).
+The size depends a lot on the parser and how much detail we keep in the AST, but \texttt{atc} is currently our only parser.
+Note that we cannot fully restore the original files from \texttt{comparatree}, because we do not store comments, precise formatting, and other minor details in the ASTs made by \texttt{atc}.
+
+In our terminology, an \emph{exercise} is a single problem definition, an exercise can have multiple \emph{assignments} (different labs or years), and an assignment has multiple \emph{submissions} from students.
+By default in these tests, we put all submissions for a single assignment into one batch and create one \texttt{comparatree} instance per batch.
+
+\subsection{Independent assignments}
+
+\begin{figure}[ht]
+\centering
+\begin{subfigure}{\textwidth}
+  \centering
+  \includegraphics[width=0.9\textwidth]{img/batches-int.eps}
+  \label{fig:batches-int}
+\end{subfigure}
+
+\begin{subfigure}{\textwidth}
+  \centering
+  \includegraphics[width=0.9\textwidth]{img/batches-adv.eps}
+  \label{fig:batches-adv}
+\end{subfigure}
+
+\begin{subfigure}{\textwidth}
+  \centering
+  \includegraphics[width=0.9\textwidth]{img/batches-ard.eps}
+  \label{fig:batches-ard}
+\end{subfigure}
+
+\caption{Comparison of original code size (x-axis) versus \texttt{comparatree} instance size (y-axis) for independent assignment batches.}
+\label{fig:batches}
+\end{figure}
+
+In this test, each batch corresponds to a single assignment where all students solve the same problem.
+\autoref{fig:batches} shows the original code size compared to the \texttt{comparatree} size.
+In all three courses, the \texttt{comparatree} size is approximately the same as the original code files.
+
+\subsection{Building archives}
+
+\begin{figure}[ht]
+\centering
+\begin{subfigure}{\textwidth}
+  \centering
+  \includegraphics[width=0.9\textwidth]{img/archive-int.eps}
+  \label{fig:archive-int}
+\end{subfigure}
+
+\begin{subfigure}{\textwidth}
+  \centering
+  \includegraphics[width=0.9\textwidth]{img/archive-adv.eps}
+  \label{fig:archive-adv}
+\end{subfigure}
+
+\begin{subfigure}{\textwidth}
+  \centering
+  \includegraphics[width=0.9\textwidth]{img/archive-ard.eps}
+  \label{fig:archive-ard}
+\end{subfigure}
+
+\caption{Comparison of total original code size versus total \texttt{comparatree} archive size when adding batches over time.}
+\label{fig:archive}
+\end{figure}
+
+To run analyses across a whole course, we build archives of all submissions.
+We simulated how an archive grows by merging assignment batches in almost chronological order over multiple years.
+The results are shown in \autoref{fig:archive}.
+
+As the archive grows, the benefits of deduplication become much clearer.
+For small instances, the \texttt{comparatree} size grows almost linearly with the code size.
+For larger archives, however, \texttt{comparatree} grows much slower than the raw code size.
+This is especially clear in the \texttt{int} course: as more submissions are added, common boilerplate code repeats often, so the growth of \texttt{comparatree} flattens out over time.
+
+\subsection{Same-author versus different-author batches}
+
+\begin{figure}[ht]
+\centering
+\begin{subfigure}{\textwidth}
+  \centering
+  \includegraphics[width=0.9\textwidth]{img/author-comparison-int.eps}
+  \label{fig:author-comparison-int}
+\end{subfigure}
+
+\begin{subfigure}{\textwidth}
+  \centering
+  \includegraphics[width=0.9\textwidth]{img/author-comparison-adv.eps}
+  \label{fig:author-comparison-adv}
+\end{subfigure}
+
+\begin{subfigure}{\textwidth}
+  \centering
+  \includegraphics[width=0.9\textwidth]{img/author-comparison-ard.eps}
+  \label{fig:author-comparison-ard}
+\end{subfigure}
+
+\caption{Comparison of original code size versus \texttt{comparatree} instance size for same-author versus different-author batches.}
+\label{fig:author-comparison}
+\end{figure}
+
+To see how repeating code from the same student affects storage, we created two types of batches for each assignment:
+\begin{enumerate}
+\item Same-author batch: Contains all submissions from a single student (the student with the most submissions for that assignment).
+\item Different-author batch: Contains the same number of submissions, but each submission comes from a different student.
+\end{enumerate}
+
+The results are shown in \autoref{fig:author-comparison}.
+The same-author batches are much smaller than the different-author batches.
+When adding more submissions from the same student, the storage size barely grows at all.
+
+This is a great result for our use in \texttt{ReCodEx}.
+Students often submit multiple times while trying to fix their code.
+Because intermediate submissions from the same student share almost the exact same tree structure, keeping every attempt takes almost no extra space in \texttt{comparatree}.
+The main storage cost comes from code written by different students, which cannot be deduplicated.
