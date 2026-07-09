@@ -1,9 +1,47 @@
 \chapter*{Conclusion}\label{sec:conclusion}
 \addcontentsline{toc}{chapter}{Conclusion}
 
+% assignment:
+
+% The goal of this work is to design a system for efficient detection of similar fragments in source code, taking into account the syntactic rules of the given language.
+% The similarity shall be primarily based on the syntax structure, disregarding semantically irrelevant factors like renaming of variables.
+
+% The work shall build upon the AST extractor for C/C++, created within the research project Syntax-driven similarity analysis of C++ source code.
+% Therefore, the implementation shall work with C/C++; however, the method shall also be applicable to abstract syntax trees extracted from other programming languages.
+
+% The primary motivation for this work is plagiarism detection; therefore, the resulting software shall be compatible with Recodex, it shall be tested on source codes retrieved from Recodex, and its performance shall be compared to the existing plagiarism detection module in Recodex.
+
+We have designed and implemented a tool for detecting similar fragments in C/C++ source code.
+The tool is based on the abstract syntax tree representation of the source code, which allows it to focus on the syntactic structure of the code rather than superficial differences like variable names or formatting.
+Although we targeted C/C++ using \texttt{atc}, the core pipeline of our system is language-agnostic and can be applied to ASTs extracted from other programming languages in the future.
+
+We evaluated the tool on a dataset of student submissions in \texttt{ReCodEx}.
+Although we could not calculate precision and recall due to the lack of a ground truth, we have shown that the tool can successfully identify similar code fragments.
+In comparison with the existing plagiarism detection module \texttt{Comparatrix} in \texttt{ReCodEx}, our tool \texttt{ContrAST} is able to detect similarities that are missed by the existing module, especially when variable names have been changed or code structures have been slightly modified.
+This demonstrates the effectiveness of our syntax-based approach.
+
+We currently do not have the fully automated batch pipeline integrated into \texttt{ReCodEx}, but we have verified that the tool can run on batches of student submissions and that its output can be displayed correctly inside \texttt{ReCodEx}.
+
 \section*{Future work}\label{sec:future}
 
-\begin{itemize}
-\item tsed paralel, share data between threads, similar tasks to the same thread
-\item tsed cost metric, use names and values in the nodes
-\end{itemize}
+Our tool remains open for further improvements and extensions.
+It is designed to be modular, allowing for the addition of new similarity metrics and other switchable components.
+
+During the next academic year, we plan to deploy the tool in a live course and gather feedback from instructors on its usability and effectiveness.
+This includes fully automating the daily batch pipeline in \texttt{ReCodEx}, allowing instructors to tune parameters for specific problems, providing a UI mechanism to mark true/false positives, and building a local ground-truth dataset for our faculty.
+
+Further investigation is needed to handle starter code provided by teachers.
+We need to distinguish between mandatory code (like required function headers) and optional fragments based on verbal lab instructions.
+We want to find a way to ignore shared template code while still identifying solutions that are suspiciously similar in the student-authored parts.
+
+In the \texttt{atc} component, we are currently losing some AST nodes.
+This is partly because Clang does not generate complete ASTs for uncompilable code, and partly because there are simply too many node types for us to handle individually.
+As a result, some subtrees become disconnected from the rest of the AST.
+One potential fix is to catch disconnected nodes when leaving a class declaration or namespace, and attach them there to preserve basic spatial locality.
+
+In the \texttt{algorithm} component, we currently do not use variable names or literal values.
+While ignoring them greatly improves performance and enables tree deduplication, combining structural matching with variable name heuristics could be helpful.
+
+Finally, regarding algorithm performance, we currently compute similarity between all pairs of nodes, which is unnecessary.
+The vast majority of node pairs are not similar at all, and we could use simple heuristics to skip them early; for example, by comparing subtree sizes first.
+We could also optimize multithreading by distributing work to threads based on data locality, allowing algorithms like \texttt{tsed} to reuse their partial result caches much more effectively.
