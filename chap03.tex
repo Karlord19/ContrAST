@@ -119,7 +119,7 @@ It is easy to accomplish this by caching the sizes of the existing content in th
 Each file is only a serialized vector and we expect the old content not to change and the new content to be appended at the end.
 With the caching in place, we can just append the new content to the files and update the cached sizes.
 
-\section{Statistics}
+\section{Statistics}\label{sec:comparatree-statistics}
 
 To show how storage efficient \texttt{comparatree} is, we compared the original code size with the size of the corresponding \texttt{comparatree} instance.
 We ran several tests to see how deduplication affects the size of the storage.
@@ -139,26 +139,9 @@ By default in these tests, we put all submissions for a single assignment into o
 
 \subsection{Independent assignments}
 
-\begin{figure}[ht]
+\begin{figure}
 \centering
-\begin{subfigure}{\textwidth}
-  \centering
-  \includegraphics[width=0.9\textwidth]{img/batches-int.eps}
-  \label{fig:batches-int}
-\end{subfigure}
-
-\begin{subfigure}{\textwidth}
-  \centering
-  \includegraphics[width=0.9\textwidth]{img/batches-adv.eps}
-  \label{fig:batches-adv}
-\end{subfigure}
-
-\begin{subfigure}{\textwidth}
-  \centering
-  \includegraphics[width=0.9\textwidth]{img/batches-ard.eps}
-  \label{fig:batches-ard}
-\end{subfigure}
-
+\includegraphics[width=\textwidth]{img/size-comparison-batches.eps}
 \caption{Comparison of original code size (x-axis) versus \texttt{comparatree} instance size (y-axis) for independent assignment batches.}
 \label{fig:batches}
 \end{figure}
@@ -169,26 +152,9 @@ In all three courses, the \texttt{comparatree} size is approximately the same as
 
 \subsection{Building archives}
 
-\begin{figure}[ht]
+\begin{figure}
 \centering
-\begin{subfigure}{\textwidth}
-  \centering
-  \includegraphics[width=0.9\textwidth]{img/archive-int.eps}
-  \label{fig:archive-int}
-\end{subfigure}
-
-\begin{subfigure}{\textwidth}
-  \centering
-  \includegraphics[width=0.9\textwidth]{img/archive-adv.eps}
-  \label{fig:archive-adv}
-\end{subfigure}
-
-\begin{subfigure}{\textwidth}
-  \centering
-  \includegraphics[width=0.9\textwidth]{img/archive-ard.eps}
-  \label{fig:archive-ard}
-\end{subfigure}
-
+\includegraphics[width=\textwidth]{img/size-comparison-archive.eps}
 \caption{Comparison of total original code size versus total \texttt{comparatree} archive size when adding batches over time.}
 \label{fig:archive}
 \end{figure}
@@ -204,26 +170,9 @@ This is especially clear in the \texttt{int} course: as more submissions are add
 
 \subsection{Same-author versus different-author batches}
 
-\begin{figure}[ht]
+\begin{figure}
 \centering
-\begin{subfigure}{\textwidth}
-  \centering
-  \includegraphics[width=0.9\textwidth]{img/author-comparison-int.eps}
-  \label{fig:author-comparison-int}
-\end{subfigure}
-
-\begin{subfigure}{\textwidth}
-  \centering
-  \includegraphics[width=0.9\textwidth]{img/author-comparison-adv.eps}
-  \label{fig:author-comparison-adv}
-\end{subfigure}
-
-\begin{subfigure}{\textwidth}
-  \centering
-  \includegraphics[width=0.9\textwidth]{img/author-comparison-ard.eps}
-  \label{fig:author-comparison-ard}
-\end{subfigure}
-
+\includegraphics[width=\textwidth]{img/authors-comparison-adv-ard-int.eps}
 \caption{Comparison of original code size versus \texttt{comparatree} instance size for same-author versus different-author batches.}
 \label{fig:author-comparison}
 \end{figure}
@@ -241,4 +190,4 @@ When adding more submissions from the same student, the storage size barely grow
 This is a great result for our use in \texttt{ReCodEx}.
 Students often submit multiple times while trying to fix their code.
 Because intermediate submissions from the same student share almost the exact same tree structure, keeping every attempt takes almost no extra space in \texttt{comparatree}.
-The main storage cost comes from code written by different students, which cannot be deduplicated.
+The main storage cost comes from code written by different students, which cannot be deduplicated that effectively.

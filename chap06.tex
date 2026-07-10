@@ -2,9 +2,7 @@
 
 \section{Dataset}
 
-The dataset used for evaluation was collected from \texttt{ReCodEx} covering the years 2018--2025.
-It includes student submissions from courses at the Faculty of Mathematics and Physics, Charles University: Programming in C++, Advanced Programming in C++, and Computer Systems (Arduino).
-The data was completely anonymized and is not publicly available.
+The dataset used for the evaluation is the same as the one used in \autoref{sec:comparatree-statistics}.
 Since the tool is intended to be used for these courses within \texttt{ReCodEx}, evaluating it on this concrete data is essential.
 
 We did not find any publicly available C/C++ datasets that fit our specific needs.
@@ -12,7 +10,7 @@ Most available research datasets focus on Java, especially for introductory prog
 In terms of code clone categories, our tool is designed to detect Type 1, Type 2, and Type 3 clones, but existing public datasets are mostly concerned with Type 4 clones (functional similarity without structural similarity).
 Because plagiarism detection datasets are usually collected from live university courses, they are not made public; our dataset follows this pattern and remains private to protect student privacy.
 
-\section{Evaluation}
+\section{Evaluation}\label{sec:evaluation}
 
 We do not report concrete numerical similarity scores for the following examples, as the exact values depend heavily on the parameters of the tools.
 Instead, we focus on a qualitative evaluation through manual inspection of the generated reports.
@@ -70,3 +68,42 @@ Because our real-world dataset does not have a pre-labeled ground truth, we coul
 In the upcoming academic year, we plan to hand the tool over to the course instructors so they can use it on live assignments and evaluate the findings directly.
 
 \section{Performance}
+
+The performance tests were executed on an 8-core Intel(R) Xeon(R) Gold 6348 CPU @ 2.60GHz.
+
+We measured the total time required for the entire \texttt{ContrAST} component, which includes loading the data from the saved \texttt{comparatree} instance, running the similarity detection algorithm, and saving the scores back to the database.
+We did not include the time spent generating the final report, as it is taking only a few seconds and does not act as a bottleneck in the system.
+
+For CrystalBLEU, we used the conservative abstraction configuration, and for TSED, we used the extreme abstraction configuration, matching the evaluation setup in \autoref{sec:evaluation}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{img/performance-ted-ard-int.eps}
+  \caption{Performance of TSED (extreme abstraction) across different assignment batches.}
+  \label{fig:performance-ted-batches}
+\end{figure}
+
+Based on the benchmarks shown in \autoref{fig:performance-ted-batches} and the nature of the TSED algorithm, the execution time scales poorly with the number of nodes in the \texttt{comparatree} instance.
+The runtime is also highly unpredictable, as the performance depends heavily on the specific shape of the trees and how many shared subtrees are assigned to an individual processing thread.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{img/performance-cb-adv-ard-int.eps}
+  \caption{Performance of CrystalBLEU (conservative abstraction) across different assignment batches.}
+  \label{fig:performance-cb-batches}
+\end{figure}
+
+In contrast, CrystalBLEU scales well with the size of the \texttt{comparatree} instance, as shown in \autoref{fig:performance-cb-batches}.
+Note that these results do not include any early pre-filtering heuristics, meaning the algorithm is strictly run against all possible pairs of nodes.
+Even without filtering, the empirical data suggests a sub-quadratic scaling behavior that performs better than $O(x^2)$ relative to the storage size $x$.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{img/performance-archive-cb-adv-ard-int.eps}
+  \caption{Performance of CrystalBLEU (conservative abstraction) on a growing archive of cumulative batches.}
+  \label{fig:performance-cb-archive}
+\end{figure}
+
+We also measured how CrystalBLEU performs over time on a growing archive of accumulated batches, as displayed in \autoref{fig:performance-cb-archive}.
+The data collection ends near the 80~MB mark because we encountered unexpected disk behavior on our testing machine, which caused the test process to terminate.
+However, the available data demonstrates that the performance scales efficiently, with each newly appended batch being processed in under 1 minute.

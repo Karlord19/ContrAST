@@ -71,4 +71,4 @@ From 108M nodes in the resulting \texttt{comparatree}, we had 845K off-tree node
 Note that we refer to the number of nodes we created in \texttt{comparatree}, not the number of nodes in the Clang AST.
 The tool creates intermediate nodes in \texttt{comparatree} that do not have a direct counterpart in the Clang AST, and thus the number of nodes in \texttt{comparatree} is not the same as the number of nodes in the Clang AST.
 
-The time to process a file by \texttt{atc} is 0.9 seconds on average, of which only 0.9 percent is spent in our code, and the rest is spent in Clang for generating the AST.
+The time to process a file by \texttt{atc} is 0.9 seconds on average (Intel(R) Xeon(R) Gold 6348 CPU @ 2.60GHz, using 1 core), of which only 0.9 percent is spent in our code, and the rest is spent in Clang for generating the AST.
