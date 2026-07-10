@@ -53,10 +53,10 @@ Finally, I want to thank Marian, Lukáš, and Prokop for their constructive feed
 % Abstract (recommended length around 80-200 words; this is not a copy of your thesis assignment!)
 \def\Abstract{%
 Students submit their programming assignments to ReCodEx, an online system that automatically evaluates code correctness and performance, and detects identical text segments to flag potential plagiarism.
-However, direct text matching is not sufficient for slightly modified code.
+However, direct text matching falls short when code is slightly modified.
 We propose a syntax-driven plagiarism detection tool that analyzes the similarity of code fragments.
 The tool is based on an abstract syntax tree representation of the code and a comparison algorithm that computes a similarity score between code fragments.
-It generates a report with potentially plagiarized code fragments and sends it to ReCodEx, where the results are visualized for the teachers.
+It generates a report with potentially plagiarized code fragments, which can be uploaded to ReCodEx to visualize the results for teachers.
 The system remains open to further improvements, such as integrating new similarity metrics or extending support to additional programming languages.
 }
 
@@ -93,5 +93,10 @@ podobnost kódu\sep detekce plagiátů
 }
 
 \def\AbstractCS{%
-\xxx{Abstrakt práce přeložte také do češtiny.}
+Studenti odevzdávají své programovací úkoly do online systému ReCodEx, který automaticky vyhodnocuje správnost a efektivitu kódu a detekuje identické textové segmenty pro odhalení potenciálního plagiátorství.
+Přímé porovnávání textu však selhává v případech, kdy je kód mírně upraven.
+Implementovali jsme nástroj pro detekci plagiátů, který analyzuje podobnost fragmentů kódu.
+Nástroj je založen na reprezentaci kódu pomocí abstraktních syntaktických stromů a algoritmu pro určení podobnostního skóre.
+Nástroj generuje reporty s lokacemi podobných fragmentů kódu, které lze nahrát do ReCodExu pro vizualizaci výsledků cvičícím.
+Systém zůstává otevřený pro další vylepšení, jako je integrace nových metrik podobnosti nebo rozšíření podpory pro další programovací jazyky.
 }
