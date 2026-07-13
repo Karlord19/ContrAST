@@ -1,11 +1,13 @@
 \chapter{\texttt{ContrAST}}\label{sec:contrast}
 
 \texttt{ContrAST} is a C++ tool that searches for similar code fragments in a given \texttt{comparatree} instance.
-It then creates a report with the found results and their similarity scores.
+It first creates an abstracted version of the original \texttt{comparatree} instance (specifically abstracting its core storage) containing only the relevant information for similarity detection.
+Then it runs a similarity search algorithm on the abstracted instance, comparing the ASTs of the code fragments and calculating their similarity scores.
+Finally, it generates a report with the findings.
 The report can be imported into \texttt{ReCodEx} for further analysis and visualization.
 
 \texttt{ContrAST} is designed to be modular and extensible, allowing for easy integration of new comparison algorithms and customization of the similarity scoring process.
-This allows us to experiment with different approaches to code similarity and adapt the tool to various use cases.
+This modularity enables us to experiment with different approaches to code similarity and adapt the tool to various use cases.
 
 % comparison algorithms
 \input{chap051}

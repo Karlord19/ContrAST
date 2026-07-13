@@ -3,7 +3,7 @@
 \section{Code clones}
 
 Code clones are similar or identical code fragments that appear in different parts of a codebase.
-They can be classified into different types based on their similarity.
+They are broadly classified into four categories based on their level of similarity \cite{bellon07,roy09}.
 
 \begin{codepair}[Type 1 clones]
 \label{prg:type1clones}
@@ -21,7 +21,7 @@ int add3(int a) {
 \end{lstlisting}
 \end{codepair}
 
-Type 1 clones are identical code fragments that differ only in whitespace and comments, see Program \ref{prg:type1clones}.
+Type 1 clones are identical code fragments that differ only in whitespace, layout, and comments (see \autoref{prg:type1clones}).
 
 \begin{codepair}[Type 2 clones]
 \label{prg:type2clones}
@@ -39,7 +39,7 @@ float add4(float x) {
 \end{lstlisting}
 \end{codepair}
 
-Type 2 clones, apart from whitespace and comments, also allow for renaming of identifiers and change in literals and types, see Program \ref{prg:type2clones}.
+Type 2 clones, apart from whitespace and comments, allow for renaming identifiers and changing literal values and data types (see \autoref{prg:type2clones}).
 
 \begin{codepair}[Type 3 clones]
 \label{prg:type3clones}
@@ -58,13 +58,13 @@ float add4(float x) {
 \end{lstlisting}
 \end{codepair}
 
-Type 3 clones might have some statements added, modified, or removed, but still show a significant similarity in their structure and functionality, see Program \ref{prg:type3clones}.
+Type 3 clones may have additional statements inserted, modified, or removed, but still show a significant similarity in their structure and functionality (see \autoref{prg:type3clones}).
 
 Type 4 clones are code fragments that perform the same functionality but are implemented differently.
-An example of type 4 clones would be two different implementations of a sorting algorithm.
+An example of Type 4 clones would be two different implementations of a sorting algorithm.
 
-In the context of introductory programming courses, every solution to a given problem would be considered a type 4 clone of every other solution, as they all perform the same functionality.
-We need to then focus on detecting type 1 and type 2 clones, and ideally also some level of type 3 clones, as they are more likely to be the result of copying and modifying code, rather than independently solving the same problem.
+In the context of introductory programming courses, almost every valid solution to a given assignment would be considered a Type 4 clone of every other solution, as they all perform the same functionality.
+We then need to focus on detecting Type 1 and Type 2 clones, and ideally also some level of Type 3 clones, as they are more likely to be the result of copying and modifying code, rather than independently solving the same problem.
 
 \section{Clone detection approaches}
 
@@ -203,7 +203,7 @@ CrystalBLEU \cite{crystalbleu23} differs from BLEU in filtering out completely t
 A tree is a data structure that consists of nodes connected by edges, where each node has a label and zero or more child nodes.
 Unweighted tree edit distance, or unweighted TED for short, is a measure of similarity between two trees, $T_1$ and $T_2$.
 It is defined as the minimum number of edit operations that transforms $T_1$ into $T_2$.
-The edit operations typically include relabeling \ref{fig:ted-rename}, insertion \ref{fig:ted-insert}, and deletion \ref{fig:ted-delete}.
+The edit operations typically include relabeling (\autoref{fig:ted-rename}), insertion (\autoref{fig:ted-insert}), and deletion (\autoref{fig:ted-delete}).
 Insertion of a node X under a node Y means that a consecutive subset S of children of Y are reattached to X, and X is then added as a child of Y at the position of S.
 Deletion of a node X means that X is removed, and its children are reattached to the parent of X at the position of X.
 It can be easily seen that inserting a node into $T_1$ is equivalent to deleting a node from $T_2$, and vice versa.

@@ -34,13 +34,13 @@ Apart from the database of the computed scores, each comparison is entirely inde
 We can store the computed scores in a cache, and copy it to the global database after all comparisons are finished.
 Sharing some scores between the threads might be beneficial, but we need to be careful about the overhead and the analysis of shared subtasks.
 We decided not to share data between the threads and keep the threads completely independent.
-We discuss this in more detail in \autoref{sec:future}.
+We discuss this in more detail in \nameref{sec:name:future}.
 
 The cost metric for the edit operations is based on the labels of the nodes.
-We operate only on the core storage of \texttt{comparatree}, so the labels of the nodes are the types of the AST nodes.
-We have no information about the actual content of the code fragments, so we cannot make any decisions based on the literal values or names of the identifiers.
-We provide a simple interface for the cost metric, which allows us to set the cost of each edit operation based on the labels of the nodes.
-We do not distinguish between deletion and insertion cost, as we want the metric to be symmetric.
+We operate only on the core storage of \texttt{comparatree}, where we work directly with the labels of the AST nodes.
+To take full advantage of AST node deduplication, we do not resolve concrete node instances, which means we cannot use instance-specific information such as identifier names or literal values.
+We provide a simple interface for the cost metric that allows setting the cost of each edit operation based on the node labels.
+We do not distinguish between deletion and insertion cost, ensuring that the metric remains symmetric.
 
 Note that tree edit distance is also defined on forests, which are sequences of trees.
 It behaves the same as on trees.

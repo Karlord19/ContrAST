@@ -7,9 +7,16 @@ We need \texttt{comparatree} to be adequately storage efficient, as we want to p
 The permanent storage of \texttt{comparatree} instances is also important, because they store the parsed submissions.
 We do not then need to store the original source code and parse it again, which saves a lot of time and space.
 
+The storage separates the core structure of the ASTs from the locations of the code fragments.
+By a structure we mean a subtree of the AST, which has its own label (e.g., variable declaration or function call) and a list of children (which are also structures).
+Locations are either absolute locations in the source code or relative locations with respect to their parent location.
+The location storage has a tree structure of relative locations that corresponds to the structure of the core storage.
+Having an absolute location of a structure allows us to reconstruct the absolute locations of all its children.
+The location information is stored completely separately from the core storage, so that the same structure can be used in different locations and contexts.
+
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.75\textwidth]{img/comparatree-floors.eps}
+  \includegraphics[width=0.65\textwidth]{img/comparatree-floors.eps}
   \caption{Organization of files in \texttt{comparatree}.}
   \label{fig:comparatree-floors}
 \end{figure}
@@ -24,7 +31,6 @@ As shown in \autoref{fig:comparatree-floors}, the data in \texttt{comparatree} i
 \section{Core storage}
 
 The class \verb|core_tree_storage| represents all the structures of the ASTs.
-By a structure we mean a subtree of the AST, which has its own label (e.g., variable declaration or function call) and a list of children (which are also structures).
 
 The set of possible labels of structures is defined by type descriptors.
 A type descriptor defines the label of a structure root.
@@ -59,23 +65,22 @@ The assignment expression \verb|a13| receives names \verb|a, b, c|, prints the f
 The binary operator \verb|a11| receives names \verb|b, c|, prints the first child \verb|a9| with name \verb|b|, then prints \verb| + |, and finally prints the second child \verb|a9| with name \verb|c|.
 The variable reference \verb|a9| just prints the name it receives.
 
-See how the child structures do not have a reference to their parent structure, so that they can be shared by multiple parent structures and used in different contexts.
+Notice how the child structures do not have a reference to their parent structure, so that they can be shared by multiple parent structures and used in different contexts.
 In the example in \autoref{fig:comparatree-core-deduplication}, the binary operator \verb|a11| is shared by both assignment expressions \verb|a13| and \verb|a14|, once as \verb|b + c| and once as \verb|b + a|.
 
 Each module has a global core node that points to the structure of the whole file, and a list of concrete names that are used in the file.
-The concrete names are stored in the order of their first occurrence in the file, so we can directly use it to reconstruct the original code by sending this list of names to the global core node.
+The concrete names are stored in the order of their first occurrence in the file, so we can directly use them to reconstruct the original code by sending this list of names to the global core node.
 
 \section{Location storage}
 
-The class \verb|loc_tree_storage| represents the locations of the structures in the source code.
-It is completely separate from the core storage, so that the same structure can be used in different locations and contexts.
+The class \verb|loc_tree_storage| represents the locations of the code fragments in the source code.
 
 We distinguish these types of locations:
 \begin{itemize}
 \item Absolute location: A concrete location in a file, represented by a file ID, a line number start and end, a column number start and end, and a character offset start and end.
 \item Size location: A location span, represented by a length in lines, columns, and characters. Written as \verb|<lines, columns, chars>|.
-\item Relative location: A location relative to another one, represented by a line and a column number offset. Written as \verb|{line_offset, column_offset}|. The offset is added (or subtracted if negative) to a reference location to get the resulting location.
-\item Location node: A node in the location storage, represented by a size location and a list of children. Each child is represented as a relative location and a location node ID.
+\item Relative location: A location relative to another one, represented by a line and a column number offset. Written as \verb|{line_offset, column_offset}|. The offset is added to a reference location to get the resulting location.
+\item Location node: A node in the location storage, represented by a size location and a list of children. Each child is represented as a relative location with respect to the parent node and a location node ID.
 \end{itemize}
 
 The location storage stores only the location nodes and is built in a bottom-up manner.
@@ -83,7 +88,7 @@ Each unique location node is stored only once and has a unique ID starting from 
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=0.6\textwidth]{img/comparatree-loc-deduplication.eps}
+  \includegraphics[width=0.55\textwidth]{img/comparatree-loc-deduplication.eps}
   \caption[The deduplication in location storage.]{The deduplication in location storage of\\\protect\parbox[b]{0.42\linewidth}{\ttfamily\raggedright\textbraceleft\\\ \ a = b + c;\\\ \ a = b + a;\\\textbraceright}}
   \label{fig:comparatree-loc-deduplication}
 \end{figure}
@@ -139,7 +144,7 @@ By default in these tests, we put all submissions for a single assignment into o
 
 \subsection{Independent assignments}
 
-\begin{figure}
+\begin{figure}[ht]
 \centering
 \includegraphics[width=\textwidth]{img/size-comparison-batches.eps}
 \caption{Comparison of original code size (x-axis) versus \texttt{comparatree} instance size (y-axis) for independent assignment batches.}
@@ -152,7 +157,7 @@ In all three courses, the \texttt{comparatree} size is approximately the same as
 
 \subsection{Building archives}
 
-\begin{figure}
+\begin{figure}[ht]
 \centering
 \includegraphics[width=\textwidth]{img/size-comparison-archive.eps}
 \caption{Comparison of total original code size versus total \texttt{comparatree} archive size when adding batches over time.}
@@ -170,7 +175,7 @@ This is especially clear in the \texttt{int} course: as more submissions are add
 
 \subsection{Same-author versus different-author batches}
 
-\begin{figure}
+\begin{figure}[htb]
 \centering
 \includegraphics[width=\textwidth]{img/authors-comparison-adv-ard-int.eps}
 \caption{Comparison of original code size versus \texttt{comparatree} instance size for same-author versus different-author batches.}
