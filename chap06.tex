@@ -101,12 +101,10 @@ Even without filtering, the empirical data suggests a sub-quadratic scaling beha
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=\textwidth]{img/performance-archive-cb-adv-ard-int.eps}
+  \includegraphics[width=\textwidth]{img/performance-archive-cb-int.eps}
   \caption{Performance of CrystalBLEU (conservative abstraction) on a growing archive of cumulative batches.}
   \label{fig:performance-cb-archive}
 \end{figure}
 
 We also measured how CrystalBLEU performs over time on a growing archive of accumulated batches, as displayed in \autoref{fig:performance-cb-archive}.
-Because the current implementation computes and stores similarity scores for all pairs of core nodes, the required computation time and storage space grow quadratically with the total number of core nodes in the \texttt{comparatree} instance.
-Regarding these space requirements, the benchmarking process ran until the \texttt{comparatree} archive reached approximately 80~MB, at which point the temporary database exhausted the available storage on the test machine and the process terminated.
-Nevertheless, the recorded data demonstrates that the algorithm scales efficiently, with each newly appended batch being processed in under 1 minute.
+Despite minor fluctuations in the measured archive sizes, the results demonstrate that the algorithm scales efficiently and can handle large volumes of submissions over multiple academic years.

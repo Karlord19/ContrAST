@@ -208,9 +208,10 @@ We can see that the edit script contained only inserting the node $X$, which res
 
 \subsection{CrystalBLEU}\label{sec:crystalbleu}
 
-CrystalBLEU \cite{crystalbleu23} is a token-based algorithm that measures the similarity of two code fragments based on the number of their shared $n$-grams.
+CrystalBLEU \cite{crystalbleu23} is a token-based algorithm adapted for trees by first converting them into token sequences via preorder traversal.
+It measures the similarity of two code fragments based on the number of their shared $n$-grams.
 An $n$-gram is a continuous sequence of $n$ tokens, and the algorithm uses all $n$-grams up to $n=4$.
-It completely ignores the most common $n$-grams, which are coming from the nature of the programming language and boilerplate code; this differs from the original BLEU algorithm.
+Unlike the original BLEU algorithm, CrystalBLEU completely ignores the most common $n$-grams, which typically stem from the nature of the programming language and boilerplate code.
 
 It is asymmetrical and computes the similarity score of a candidate with respect to a reference.
 The need for symmetry is a common requirement and is solved, for example, by computing the score in both directions and taking the average \cite{sbleu10}.
