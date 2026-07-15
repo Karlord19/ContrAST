@@ -22,8 +22,8 @@ The \texttt{algorithm} can only compute similarity scores and save them without 
 The \texttt{printer} can ask \texttt{algorithm} for the report and print it without the need to compute the similarity scores again.
 
 All the components have their settings and configuration options, allowing for easy customization of the tool.
-We integrated the \texttt{CLI11} \cite{cli11} library for command line parsing.
-It loads the settings from the command line arguments, and we can then create the components with the given settings.
+We integrated the \texttt{CLI11} \cite{cli11} library for command-line parsing.
+It loads the settings from the command-line arguments, and we can then create the components with the given settings.
 
 There is a global \texttt{registry} that keeps track of all available switchable components, allowing for easy replacement of the components with different implementations.
 The switchable components are \texttt{abstraction}, \texttt{algorithm}, and \texttt{printer}, and we can get an instance of any of them from the \texttt{registry} by specifying the name of the desired implementation.

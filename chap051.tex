@@ -13,13 +13,13 @@ Currently, \texttt{ContrAST} implements tree similarity edit distance and Crysta
 
 \subsection{Tree similarity edit distance}\label{sec:tsed}
 
-Tree similarity edit distance (TSED) is a tree-based algorithm that measures the cost of transforming one labeled tree into another using a set of edit operations.
+Tree similarity edit distance (TSED) is a tree-based algorithm that computes the similarity based on the cost of transforming one tree into another using a set of edit operations.
 The edit operations include insertion, deletion, and relabeling of nodes, and based on the concrete operation and the node label, we can assign different costs to each operation.
 The definition and theoretical background of TSED are described in \autoref{sec:ted}.
 
 We choose TSED as one of the comparison algorithms because it is able to capture the surface similarity \cite{dristi25} and structural alignment \cite{rahman26} of code fragments.
 It did not perform well in the experiments of Ebrahim and Joy \cite{ebrahim26}, as all of the edit operations had unit cost.
-The cost of the edit operations is crucial for the performance of TSED \cite{changedistilling07}, and we need to pay special attention to the cost of the relabeling operation.
+The cost of the edit operations is crucial for the performance of TSED \cite{song24,changedistilling07}, and we need to pay special attention to the cost of the relabeling operation.
 
 \subsubsection{Implementation}
 
@@ -46,7 +46,7 @@ Note that tree edit distance is also defined on forests, which are sequences of 
 It behaves the same as on trees.
 
 The algorithm is implemented in the \texttt{algorithm\_ted\_pre} class.
-The normalization of the computed scores and the enumeration of the tasks for the comparisons is implemented in the \texttt{algorithm\_distance} class, which inherits from the \texttt{algorithm} class.
+The normalization of the computed scores and the enumeration of the tasks for the comparisons are implemented in the \texttt{algorithm\_distance} class, which inherits from the \texttt{algorithm} class.
 
 Given two nodes $node_i$ and $node_j$, we first create their preorder traversals $S_i$ and $S_j$.
 The algorithm then operates on a two-dimensional matrix $D$ of size $(|S_i| + 1) \times (|S_j| + 1)$.
@@ -198,7 +198,7 @@ The cost of transforming the remaining forests is $1$ from $D[2][4]$ (the index 
 That gives us a total cost of $4$ for the jump operation.
 
 The final distance between the two trees is stored in the top left cell $D[0][0]$, and it is $1$.
-We can track back the operations that led to this distance by looking at the minimum cost operation in each cell.
+We can trace back the operations that led to this distance by looking at the minimum cost operation in each cell.
 Cell $D[0][0]$ has the minimum cost from the relabeling operation, so we relabel the root nodes of both trees (node $A$ from the left tree to the node $A$ from the right tree).
 We then move to the diagonal cell $D[1][1]$, which has the minimum cost from the jump operation, so we transform the current subtrees (node $B$ from the left tree to the node $B$ from the right tree).
 The jump operation tells us to go to the cell $D[2][2]$, which has the minimum cost from the insertion operation, so we insert the node $X$ from the top tree.
@@ -210,7 +210,7 @@ We can see that the edit script contained only inserting the node $X$, which res
 
 CrystalBLEU \cite{crystalbleu23} is a token-based algorithm adapted for trees by first converting them into token sequences via preorder traversal.
 It measures the similarity of two code fragments based on the number of their shared $n$-grams.
-An $n$-gram is a continuous sequence of $n$ tokens, and the algorithm uses all $n$-grams up to $n=4$.
+An $n$-gram is a contiguous sequence of $n$ tokens, and the algorithm uses all $n$-grams up to $n=4$.
 Unlike the original BLEU algorithm, CrystalBLEU completely ignores the most common $n$-grams, which typically stem from the nature of the programming language and boilerplate code.
 
 It is asymmetrical and computes the similarity score of a candidate with respect to a reference.
@@ -249,7 +249,7 @@ $$mean = \exp\left(\sum_{n=1}^{4} w_n \cdot \ln(p_n)\right),$$
 where $w_n$ is the weight for $n$-grams of order $n$.
 We use uniform weights $w_n = 0.25$ for all $n$-grams, but we can experiment with different weights to emphasize certain $n$-gram orders.
 
-The original BLEU algorithm finally multiplies the score with a brevity penalty, which penalizes candidates that are significantly shorter than the reference.
+The original BLEU algorithm finally multiplies the score by a brevity penalty, which penalizes candidates that are significantly shorter than the reference.
 The brevity penalty is $1$ if the candidate is longer than the reference, and $$\exp(1 - \frac{|\text{reference}|}{|\text{candidate}|})$$ otherwise.
 We do not use the brevity penalty, as our modification of the clipped precision already penalizes size differences between the code fragments.
 

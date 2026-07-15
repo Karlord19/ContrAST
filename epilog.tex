@@ -50,4 +50,4 @@ While ignoring them greatly improves performance and enables tree deduplication,
 
 Finally, regarding algorithm performance, we currently compute similarity between all pairs of nodes, which is unnecessary.
 The vast majority of node pairs are not similar at all, and we could use simple heuristics to skip them early; for example, by comparing subtree sizes first.
-We could also optimize multithreading by distributing work to threads based on data locality, allowing algorithms like \texttt{tsed} to reuse their partial result caches much more effectively.
+We could also optimize multithreading by distributing work to threads based on data locality, allowing algorithms like TSED to reuse their partial result caches much more effectively.

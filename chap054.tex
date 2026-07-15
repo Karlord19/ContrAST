@@ -42,7 +42,7 @@ We need to ensure that all the data computed and stored in the archive is preser
 \subsubsection{\texttt{service}}
 
 The \texttt{abstraction\_storage} has a set of services that provide additional data about the storage.
-For easy access to the services during the entire process, the storage maintains maximally one instance of each service type.
+For easy access to the services during the entire process, the storage maintains at most one instance of each service type.
 Other components ask the storage for a service identified by its class, and the storage either returns the existing instance or creates a new one if it does not exist yet (and attempts to load its contents from the save directory).
 The services are automatically saved alongside the \texttt{abstraction\_storage}.
 
@@ -53,7 +53,7 @@ Their primary purpose is to save the results of computations that are expensive 
 Each algorithm can create its own service to store its results; the next time it runs, it can load the results from the service instead of recomputing them.
 As the only expected user of the service is the algorithm itself, and there should be only one algorithm configuration for the storage, we do not have to worry about conflicts from using the same service for different purposes.
 
-\subsection{\texttt{abstraction}}
+\subsection{\texttt{abstraction}}\label{sec:abstraction}
 
 The \texttt{abstraction} class is a base class for all abstractions and is a switchable component.
 It is used to create the \texttt{abstraction\_storage} from the original \texttt{storage} instance.
@@ -65,7 +65,8 @@ If a node has a mapping for its label, it collects its children and creates a ne
 
 We can easily create new abstractions with the use of the \texttt{abstractor} by only defining the mapping of the original type descriptors to the abstraction type descriptors.
 
-In \texttt{contrast\_common\_derived}, we provide an abstraction called \texttt{identity}, which does not change the original ASTs at all.
+In \texttt{contrast\_common\_derived}, we provide an abstraction called \texttt{identity}, which does not modify the original ASTs at all.
+In \texttt{contrast\_clangtype}, we provide an \texttt{extreme} abstraction, which preserves only the most basic structure of the ASTs, and a \texttt{conservative} abstraction, which removes only the most non-essential details of the ASTs.
 
 \subsection{\texttt{algorithm}}
 
@@ -88,14 +89,14 @@ In \texttt{contrast\_common\_derived}, we provide these algorithms:
 \begin{itemize}
 \item \texttt{noop} does nothing.
 \item \texttt{dump} creates a location storage for the \texttt{abstraction\_storage} and pretty-prints the abstracted modules.
-\item \texttt{tedpre} computes the tree edit distance (\texttt{pre} stands for prefetching all the data needed for the computation; details in \autoref{sec:tsed}).
+\item \texttt{tedpre} computes the tree similarity edit distance (\texttt{pre} stands for prefetching all the data needed for the computation; details in \autoref{sec:tsed}).
 \item \texttt{bleu} computes the BLEU score.
 \item \texttt{crystalbleu} creates a crystal service with the found crystals upon request, and computes the CrystalBLEU score (details in \autoref{sec:crystalbleu}).
 \end{itemize}
 
-\subsubsection{\texttt{cost\_metric}}
+\subsubsection{\texttt{cost\_metric}}\label{sec:cost-metric}
 
-The tree edit distance algorithm needs a cost metric to compute the cost of the edit operations (details in \autoref{sec:tsed}).
+The tree similarity edit distance algorithm needs a cost metric to compute the cost of the edit operations (details in \autoref{sec:tsed}).
 
 The \texttt{cost\_metric} class is a base class for all cost metrics and is a switchable component.
 It returns the cost of the delete and relabel operations (the insert operation is considered the same as the delete operation) based on the labels of the nodes.
@@ -104,6 +105,7 @@ The \texttt{contrast\_common\_derived} library provides simple and table-based c
 The simple cost metric corresponds to the default configuration, which assigns a cost of 1 to all operations. The relabel operation has a cost of 0 if the labels are identical.
 The table-based cost metric allows us to define the costs of the relabel operations in a table, and the costs of the delete operations in a vector.
 Each label has its own index in the table and vector, which is used to access the corresponding costs.
+For \texttt{contrast\_clangtype}, we implemented a table-based cost metric called \texttt{extremescs} for the \texttt{extreme} abstraction, inspired by SimilarityCSharp \cite{similaritycsharp}.
 
 \subsubsection{Finding original locations}
 

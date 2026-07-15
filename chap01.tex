@@ -73,7 +73,7 @@ To achieve this, a sequence of steps is typically followed \cite{roy09}.
 The detector may use only a subset of these steps, depending on the specific approach and the type of clones it aims to detect.
 
 \begin{enumerate}
-\item Preprocessing: Generated files are removed. The remaining files are fractioned into relevant units, such as functions or classes.
+\item Preprocessing: Generated files are removed. The remaining files are partitioned into relevant units, such as functions or classes.
 \item Transformation: The code is transformed into an intermediate representation.
 \item Extraction: One of the following approaches is used to extract features from the code:
   \begin{itemize}
@@ -101,6 +101,9 @@ The level of analysis performed then impacts the types of clones that can be det
 
 \section{Syntactic analysis of source code}
 
+There are many tools for parsing source code and extracting its syntactic structure.
+They provide different levels of abstraction, ranging from a simple parse tree to a full semantic analysis of the code.
+
 We can use Flex \cite{flex} and Bison \cite{bison} as a lexer and parser, but it requires us to write a grammar for the language we want to parse.
 It is rather difficult to write a complete grammar for a complex language, and it is also difficult to keep it up to date with the language evolution.
 
@@ -113,7 +116,7 @@ It is used by Saksa \cite{saksa20} for parsing Python code and then hashing the 
 Similarly to Python, Java and C\# also have their own standard modules for inspecting the AST of Java \cite{javaast} and C\# \cite{csharpast} code, respectively.
 Native support from the official distributions ensures the correctness and up-to-dateness of the modules, and also provides all the information about the code and AST.
 
-Tree-sitter \cite{treesitter} is a parser generator tool (generates parser from a grammar) and an incremental parsing library (it is able to update the parse tree as the code changes).
+Tree-sitter \cite{treesitter} is a parser generator tool (generates a parser from a grammar) and an incremental parsing library (it is able to update the parse tree as the code changes).
 It provides parsers for many programming languages and has a wide range of bindings for different programming languages for easy integration into various tools \cite{dolos22}.
 
 ANTLR \cite{antlr} is a parser generator tool.
@@ -126,13 +129,13 @@ It provides LibTooling \cite{libtooling} for building standalone tools, LibForma
 
 \section{Clone detection tools}
 
-We shortly review some of the existing plagiarism detection tools that accept source code as input, especially those that are relevant to our work or are widely used.
+We briefly review some of the existing plagiarism detection tools that accept source code as input, especially those that are relevant to our work or are widely used.
 We focus only on the original ideas behind the tools; many of them have evolved and now include various new approaches and features.
 
 Probably the most widely used detector is Moss (Measure of Software Similarity) using the winnowing algorithm \cite{moss03}.
 It primarily operates on source code, but the algorithm itself is textual.
 The code is first parsed and normalized based on the input format and then printed to a string representation.
-We call a substring of the string representation of length $n$ a $n$-gram.
+We call a substring of the string representation of length $n$ an $n$-gram.
 All $n$-grams are collected and hashed, and then all windows of a certain size are created from the sequence of hashes.
 From each window, the minimum hash value is selected as a fingerprint.
 The fingerprints are then stored, and the detector quickly finds matching fingerprints between different documents.
@@ -154,13 +157,13 @@ Then, the fragments are compared line by line, and the longest common subsequenc
 iClones \cite{iclones09} addresses the problem of needing to run a new analysis on every small change in the codebase, which is very inefficient.
 The idea is to build a suffix tree from the tokenized and normalized code, and update the tree locally and incrementally as the code changes.
 
-Dolos \cite{dolos22} creates fingerprints similar to Moss, but operates on normalized token sequences instead. For each pair of documents, similarity, total overlap and longest shared fragment are computed. Based on those metrics, the candidates are ordered and filtered.
+Dolos \cite{dolos22} creates fingerprints similar to Moss, but operates on normalized token sequences instead. For each pair of documents, similarity, total overlap, and longest shared fragment are computed. Based on those metrics, the candidates are ordered and filtered.
 
-BLEU (BiLingual Evaluation Understudy) \cite{bleu02} is a metric originally designed for evaluating machine translation, with the idea that a good machine translation should be similar to a professional human translation. A sequence of words is considered, all $n$-grams are extracted, with an upper limit on $n$. The similarity score is based on the number of matching $n$-grams between two documents.
+BLEU (BiLingual Evaluation Understudy) \cite{bleu02} is a metric originally designed for evaluating machine translation, with the idea that a good machine translation should be similar to a professional human translation. A sequence of words is considered; all $n$-grams are extracted, with an upper limit on $n$. The similarity score is based on the number of matching $n$-grams between two documents.
 
 CodeBLEU \cite{codebleu20} is an adaptation of BLEU for source code. It also considers matching the syntactic AST and the semantic dataflow, in addition to the lexical $n$-grams.
 
-CrystalBLEU \cite{crystalbleu23} differs from BLEU in filtering out completely the most common $n$-grams, as they come from the nature of the language rather that from the specific code fragment.
+CrystalBLEU \cite{crystalbleu23} differs from BLEU in filtering out completely the most common $n$-grams, as they come from the nature of the language rather than from the specific code fragment.
 
 \subsection{Tree edit distance}\label{sec:ted}
 
@@ -201,15 +204,15 @@ CrystalBLEU \cite{crystalbleu23} differs from BLEU in filtering out completely t
 \end{figure}
 
 A tree is a data structure that consists of nodes connected by edges, where each node has a label and zero or more child nodes.
-Unweighted tree edit distance, or unweighted TED for short, is a measure of similarity between two trees, $T_1$ and $T_2$.
-It is defined as the minimum number of edit operations that transforms $T_1$ into $T_2$.
+Unweighted tree edit distance, or unweighted TED for short, is a measure of dissimilarity between two trees, $T_1$ and $T_2$.
+It is defined as the minimum number of edit operations needed to transform $T_1$ into $T_2$.
 The edit operations typically include relabeling (\autoref{fig:ted-rename}), insertion (\autoref{fig:ted-insert}), and deletion (\autoref{fig:ted-delete}).
-Insertion of a node X under a node Y means that a consecutive subset S of children of Y are reattached to X, and X is then added as a child of Y at the position of S.
+Insertion of a node X under a node Y means that a consecutive subset S of children of Y is reattached to X, and X is then added as a child of Y at the position of S.
 Deletion of a node X means that X is removed, and its children are reattached to the parent of X at the position of X.
 It can be easily seen that inserting a node into $T_1$ is equivalent to deleting a node from $T_2$, and vice versa.
 
 In a more general setting, we can assign different cost values to each type of edit operation, and different costs to different labels.
-Weighted TED is then defined as the minimum weighted number of edit operations that transforms $T_1$ into $T_2$.
+Weighted TED is then defined as the minimum weighted number of edit operations needed to transform $T_1$ into $T_2$.
 By TED we will refer to weighted TED, unless otherwise specified.
 
 The formal definition of TED is as follows \cite{zhang89}:
@@ -220,7 +223,7 @@ Let $T_1$ and $T_2$ be two labeled trees.
 The tree edit distance between $T_1$ and $T_2$ is defined as
 $$TED(T_1, T_2) = \min \{c(S)\},$$ where $S$ is a sequence of edit operations transforming $T_1$ into $T_2$.
 \end{defn}
-The definition can be easily adapted to the case of forests, which are a sequence of trees.
+The definition can be easily adapted to the case of forests, which are sequences of trees.
 
 The similarity score between two trees can be defined as a function of the edit distance \cite{song24}:
 $$TSED(T_1, T_2) = \max\left(1-\dfrac{TED(T_1, T_2)}{\max(|T_1|, |T_2|)}, 0\right),$$ where $|T|$ is the number of nodes in the tree $T$.
@@ -229,16 +232,17 @@ Zhang and Shasha \cite{zhang89} computed TED in time complexity $$O(|T_1|\cdot |
 The algorithm is based on the concept of keyroots, which are nodes in the tree that have a left sibling, or are the root of the tree.
 The keyroots are exactly the nodes that need a separate computation of the distance.
 
-Klein \cite{klein98} came with an idea of decomposing one of the trees by heavy paths, which are paths that always follow the child with the largest subtree.
+Klein \cite{klein98} came up with an idea of decomposing one of the trees by heavy paths, which are paths that always follow the child with the largest subtree.
 This approach leads to time complexity of $$O(|T_1|^2\cdot |T_2|\cdot \log |T_2|).$$
 
 Pawlik and Augsten \cite{apted15,apted16} proposed the APTED algorithm (All Path Tree Edit Distance) that finds the optimal decomposition strategy for the input trees, and thus achieves the best possible time in the class of all-path algorithms.
 The strategy is found in time $$O(n^2)$$ for $n=\max(|T_1|,|T_2|)$.
 The whole algorithm is still limited by $O(n^3)$ time complexity, because it uses the decomposition strategy approach.
 
-Nogler, Polak, Saha, Vassilevska Williams, Xu, and Ye \cite{nogler25} proved that TED is fine-grained equivalent to All-Pairs Shortest Paths (APSP; we need to find the shortest paths between all pairs of nodes).
-With the fastest algorithm for APSP at their time, they managed to compute TED in time $$\dfrac{n^3}{2^{\Omega(\sqrt{\log n})}}.$$
-This proves that TED is solvable in truly subcubic time.
+Nogler, Polak, Saha, Vassilevska Williams, Xu, and Ye \cite{nogler25} proved that TED is fine-grained equivalent to All-Pairs Shortest Paths (APSP; the problem of finding the shortest paths between all pairs of nodes).
+By utilizing the fastest known algorithm for APSP, they managed to compute TED in weakly subcubic time $$\dfrac{n^3}{2^{\Omega(\sqrt{\log n})}}.$$
+This represents the first-ever subcubic algorithm for TED.
+However, because of its equivalence to APSP, a truly subcubic time complexity of $O(n^{3-\epsilon})$ for some $\epsilon > 0$ remains impossible under the popular APSP hypothesis.
 
 Bounded TED sets an upper bound $k$ for TED, and we only compute the edit distance until it exceeds $k$.
 In this setting, ideally for $k\ll n$, the distance can be computed much faster.
@@ -250,7 +254,7 @@ They achieved up to 42 times speedup over APTED.
 
 \subsection{Tool comparison}
 
-We shortly describe the results of some comparisons of plagiarism detection tools that accept source code as input.
+We briefly describe the results of some comparisons of plagiarism detection tools that accept source code as input.
 We do not provide a unified comparison of the tools, as they are often evaluated on different datasets and with different parameters, so the results are not directly comparable.
 
 Hage, Rademaker, and van Vugt \cite{hage11} compare several tools, including JPlag, Moss, and sim, on Java student submissions.
@@ -259,7 +263,7 @@ They measure how sensitive the tools are to code modifications, and JPlag is fou
 Ahadi and Mathieson \cite{ahadi19} compare JPlag, Moss, and sim, on C++ student submissions.
 They find that sim and Moss are better than JPlag in terms of both precision and recall.
 
-Song, Lothritz, Tang, Bissyadé, and Klein \cite{song24} compute the correlation of several metrics, including TSED and BLEU, on Java code and shortly compare the results using different parsers, Tree-sitter \cite{treesitter} and ANTLR \cite{antlr}.
+Song, Lothritz, Tang, Bissyandé, and Klein \cite{song24} compute the correlation of several metrics, including TSED and BLEU, on Java code and briefly compare the results using different parsers, Tree-sitter \cite{treesitter} and ANTLR \cite{antlr}.
 They find that the choice of parser has a significant impact on the results.
 They also show that the performance of TSED is dependent on the parameters of the edit operations.
 

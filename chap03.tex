@@ -3,7 +3,7 @@
 \texttt{comparatree} \cite{comparatree} is a C++ library aiming to store abstract syntax trees (ASTs) of source code very efficiently with custom metadata.
 Although \texttt{comparatree} is the name of the whole library, we use the name \texttt{comparatree} to refer to a single instance of its \texttt{tree\_storage} class in other chapters.
 
-We need \texttt{comparatree} to be adequately storage efficient, as we want to perform various analyses on large datasets in memory.
+We need \texttt{comparatree} to be adequately storage-efficient, as we want to perform various analyses on large datasets in memory.
 The permanent storage of \texttt{comparatree} instances is also important, because they store the parsed submissions.
 We do not then need to store the original source code and parse it again, which saves a lot of time and space.
 
@@ -94,6 +94,7 @@ Each unique location node is stored only once and has a unique ID starting from 
 \end{figure}
 
 In \autoref{fig:comparatree-loc-deduplication}, we can see the deduplication in location storage corresponding to the same code as in \autoref{fig:comparatree-core-deduplication}.
+Note that the diagram was generated using \texttt{atc} (details in \autoref{sec:atc}) and the locations are not exact, as the ranges are inclusive and the semicolons are not part of the expressions.
 The compound statement corresponds to the node \verb|L9| and has two children \verb|L8|.
 The first child is shifted by \verb|{1,2}|, meaning that it starts \verb|1| line and \verb|2| columns after the start of the compound statement.
 Both assignment expressions correspond to the same node \verb|L8|, but beware that their locations are different because of the different relative location from the compound statement.
@@ -126,12 +127,12 @@ With the caching in place, we can just append the new content to the files and u
 
 \section{Statistics}\label{sec:comparatree-statistics}
 
-To show how storage efficient \texttt{comparatree} is, we compared the original code size with the size of the corresponding \texttt{comparatree} instance.
+To show how storage-efficient \texttt{comparatree} is, we compared the original code size with the size of the corresponding \texttt{comparatree} instance.
 We ran several tests to see how deduplication affects the size of the storage.
 
 The test files were collected from \texttt{ReCodEx} covering the years 2018--2025.
 The dataset includes student submissions from three courses at the Faculty of Mathematics and Physics, Charles University:
-Programming in C++ (\texttt{int}), Advanced Programming in C++ (\texttt{adv}), and Computer Systems (\texttt{ard}).
+Programming in C++ (\texttt{int}; containing $186392$ files), Advanced Programming in C++ (\texttt{adv}; containing $11818$ files), and Computer Systems (\texttt{ard}; containing $54876$ files).
 The data was completely anonymized and is not publicly available.
 We split the results by course, as the code characteristics and number of submissions vary a lot between courses.
 
