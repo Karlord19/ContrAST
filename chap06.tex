@@ -2,14 +2,11 @@
 
 \section{Dataset}
 
-For our evaluation and performance benchmarks, we use the real-world dataset collected from \texttt{ReCodEx}, covering student submissions across the years 2018--2025 as detailed in \autoref{sec:comparatree-statistics}.
-Since our tool is designed to be deployed for these specific courses within \texttt{ReCodEx}, testing it on actual student code is essential.
-
-We did not use public C/C++ datasets because none matched our requirements.
-Existing benchmark datasets present two main issues for our evaluation.
-First, general code clone datasets mostly target Java and focus on Type 4 clones (functional similarity without structural similarity), but our tool focuses on Type 1, Type 2, and Type 3 structural clones.
-Second, plagiarism detection datasets, which would ideally consist of student submissions from introductory programming courses, are rarely made public.
-Our dataset follows this standard and remains private to protect student privacy.
+For our evaluation and performance benchmarks, we use a real-world dataset collected from \texttt{ReCodEx}, covering student submissions across the years 2018--2025 as detailed in \autoref{sec:comparatree-statistics}.
+Evaluating \texttt{ContrAST} on actual student submissions from our faculty is essential for two reasons.
+First, \texttt{ContrAST} is specifically created to be integrated into \texttt{ReCodEx} for these courses, making historical local submissions the most representative benchmark.
+Second, standard public clone detection benchmarks primarily target Java or Type 4 functional similarity, whereas our primary focus is detecting Type 1, Type 2, and Type 3 structural clones across multi-year course archives.
+To respect student privacy, our dataset is fully anonymized and kept private.
 
 \section{Evaluation}\label{sec:evaluation}
 
@@ -62,7 +59,7 @@ The tool is designed to flag potential candidates to cut down the time required 
 \end{figure}
 
 Finally, \autoref{fig:screenshot_syntax} shows two code fragments matched by \texttt{ContrAST} with a high similarity score, where \texttt{Comparatrix} gives a lower score.
-Deep syntax analysis allows the system to ignore minor syntactical changes and focus on the underlying code structure.
+Deep syntax analysis allows the system to ignore minor syntactic changes and focus on the underlying code structure.
 By implementing a continuous similarity metric instead of looking for exact literal blocks, the system can successfully flag code fragments that have been modified.
 
 We ran a few test reports with different thresholds on our dataset to verify that the pipeline works end-to-end and that the outputs display correctly inside \texttt{ReCodEx}.

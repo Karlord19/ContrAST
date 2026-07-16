@@ -105,7 +105,8 @@ The \texttt{contrast\_common\_derived} library provides simple and table-based c
 The simple cost metric corresponds to the default configuration, which assigns a cost of 1 to all operations. The relabel operation has a cost of 0 if the labels are identical.
 The table-based cost metric allows us to define the costs of the relabel operations in a table, and the costs of the delete operations in a vector.
 Each label has its own index in the table and vector, which is used to access the corresponding costs.
-For \texttt{contrast\_clangtype}, we implemented a table-based cost metric called \texttt{extremescs} for the \texttt{extreme} abstraction, inspired by SimilarityCSharp \cite{similaritycsharp}.
+
+Using this table-based approach, we implemented the \texttt{extremescs} cost metric for the \texttt{extreme} abstraction, inspired by SimilarityCSharp \cite{similaritycsharp}.
 
 \subsubsection{Finding original locations}
 

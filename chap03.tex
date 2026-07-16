@@ -154,7 +154,7 @@ By default in these tests, we put all submissions for a single assignment into o
 
 In this test, each batch corresponds to a single assignment where all students solve the same problem.
 \autoref{fig:batches} shows the original code size compared to the \texttt{comparatree} size.
-In all three courses, the \texttt{comparatree} size is approximately the same as the original code files.
+In all three courses, the \texttt{comparatree} size is approximately the same as the original code size.
 
 \subsection{Building archives}
 
@@ -172,7 +172,6 @@ The results are shown in \autoref{fig:archive}.
 As the archive grows, the benefits of deduplication become much clearer.
 For small instances, the \texttt{comparatree} size grows almost linearly with the code size.
 For larger archives, however, \texttt{comparatree} grows much slower than the raw code size.
-This is especially clear in the \texttt{int} course: as more submissions are added, common boilerplate code repeats often, so the growth of \texttt{comparatree} flattens out over time.
 
 \subsection{Same-author versus different-author batches}
 

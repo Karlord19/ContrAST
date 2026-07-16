@@ -193,16 +193,16 @@ The cost of relabeling is $1$ for different labels, so we add $1$ to the cost of
 That gives us a total cost of $2$ for the relabeling operation.
 
 If we look at the cell $D[1][0]$, we see that the current node of $S_i$ (left tree) is not a root of its subtree, so we cannot apply the relabeling operation and we need to use the jump operation.
-The cost of transforming the current subtrees (which is the node $B$ from the left tree and the whole right tree) is already computed and stored in the database, and it is $3$.
+The cost of transforming the current subtrees (which is the node $B$ from the left tree and the whole top tree) is already computed and stored in the database, and it is $3$.
 The cost of transforming the remaining forests is $1$ from $D[2][4]$ (the index after the end of the current left subtree is $2$ and the index after the end of the current top subtree is $4$).
 That gives us a total cost of $4$ for the jump operation.
 
 The final distance between the two trees is stored in the top left cell $D[0][0]$, and it is $1$.
 We can trace back the operations that led to this distance by looking at the minimum cost operation in each cell.
-Cell $D[0][0]$ has the minimum cost from the relabeling operation, so we relabel the root nodes of both trees (node $A$ from the left tree to the node $A$ from the right tree).
-We then move to the diagonal cell $D[1][1]$, which has the minimum cost from the jump operation, so we transform the current subtrees (node $B$ from the left tree to the node $B$ from the right tree).
+Cell $D[0][0]$ has the minimum cost from the relabeling operation, so we relabel the root nodes of both trees (node $A$ from the left tree to the node $A$ from the top tree).
+We then move to the diagonal cell $D[1][1]$, which has the minimum cost from the jump operation, so we transform the current subtrees (node $B$ from the left tree to the node $B$ from the top tree).
 The jump operation tells us to go to the cell $D[2][2]$, which has the minimum cost from the insertion operation, so we insert the node $X$ from the top tree.
-We move to the cell $D[2][3]$, which has the minimum cost from the relabeling operation, so we relabel the node $C$ from the left tree to the node $C$ from the right tree.
+We move to the cell $D[2][3]$, which has the minimum cost from the relabeling operation, so we relabel the node $C$ from the left tree to the node $C$ from the top tree.
 Finally, we move to the cell $D[3][4]$, which corresponds to the empty trees, and we are done.
 We can see that the edit script contained only inserting the node $X$, which results in a total distance of $1$ between the two trees.
 

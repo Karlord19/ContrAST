@@ -15,8 +15,8 @@ The teachers can then inspect those fragments and decide whether the similarity 
 A string-based plagiarism-detection tool \texttt{Comparatrix} \cite{comparatrix} is currently used in \texttt{ReCodEx} for C++ submissions.
 It first removes comments and normalizes whitespace in the source code, and then collects $n$-grams of the resulting string.
 These $n$-grams are searched for duplicates and identical code fragments are reported as similar.
-If a file contains a large scope of code that is identical to fragments written by another author, it is reported as a case of plagiarism.
-This approach does not do any syntactic or semantic analysis of the code, so the fragments do not correspond to syntactical structures.
+If a file contains a large portion of code that is identical to fragments written by another author, it is reported as a case of plagiarism.
+This approach does not do any syntactic or semantic analysis of the code, so the fragments do not correspond to syntactic structures.
 The tool only detects identical code, so slightly modified code, for example with renamed identifiers, will not be detected at all.
 
 At the end of each day, a batch of new files is sent to the plagiarism-detection tool, and the reports focusing on the new files (and their similarity to the new or old files) are generated and sent back to \texttt{ReCodEx}.
